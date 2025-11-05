@@ -1,6 +1,7 @@
 from code.player import Player
 from pico2d import *
 
+
 def reset_world():
     global player
     player = Player()

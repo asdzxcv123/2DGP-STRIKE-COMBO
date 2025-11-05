@@ -1,4 +1,4 @@
-from event_to_string import event_to_string
+from code.event_to_string import event_to_string
 
 class StateMachine:
     def __init__(self, start_state, state_transitions):
