@@ -28,12 +28,8 @@ class Player:
         sx = self.frame * self.frame_width
         sy = (self.rows - 1 - self.row_index) * self.frame_height
 
-        Player.Image.clip_draw(
-            sx, sy,
-            self.frame_width, self.frame_height,
-            self.x, self.y
-        )
-        delay(0.5)
+        Player.Image.clip_draw(sx, sy, self.frame_width, self.frame_height+30, self.x, self.y, 400, 300)
+        delay(0.2)
 
     def handle_event(self, event):
         pass
