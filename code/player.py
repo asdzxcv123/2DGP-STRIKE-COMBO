@@ -1,6 +1,19 @@
 from pico2d import *
 from code.state_machine import StateMachine
 
+def right_down(e):
+    pass
+
+def right_up(e):
+    pass
+
+def left_down(e):
+    pass
+
+def left_up(e):
+    pass
+
+
 class Idle:
     def __init__(self, Player):
         self.player = Player
@@ -25,7 +38,33 @@ class Idle:
                                self.player.x, self.player.y, 400, 300)
         delay(0.2)
         pass
+class Walk:
+    def __init__(self, Player):
+        self.player = Player
 
+        pass
+
+    def enter(self, e):
+        self.player.row_index = 3
+        self.player.cols=10
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        self.player.frame = (self.player.frame + 1) % self.player.cols
+        self.player.x += self.player.face_dir * 5
+        pass
+
+    def draw(self):
+        sx = self.player.frame * self.player.frame_width
+        sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
+
+        Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
+                               self.player.x, self.player.y, 400, 300)
+        delay(0.2)
+        pass
 class Player:
     Image = None
     def __init__(self):
@@ -47,9 +86,9 @@ class Player:
         self.frame_height = Player.Image.h // self.rows
 
         self.IDLE = Idle(self)
-
+        self.WALK = Walk(self)
         self.state_machine = StateMachine(
-            self.IDLE,
+            self.WALK,
             {
                 self.IDLE: { },
             }
