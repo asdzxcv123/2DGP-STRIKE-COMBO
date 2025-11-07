@@ -76,6 +76,24 @@ class Walk:
         delay(0.05)
     def handle_event(self, e):
         pass
+
+class RUN:
+    def __init__(self, Player):
+        self.player = Player
+        pass
+
+    def enter(self, e):
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+        pass
+
 class Player:
     Image = None
     def __init__(self):
@@ -103,6 +121,7 @@ class Player:
             {
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK },
                 self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE},
+
             }
         )
 
