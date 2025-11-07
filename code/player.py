@@ -1,17 +1,21 @@
-from pico2d import *
+from pico2d import load_image, delay
 from code.state_machine import StateMachine
-
+from sdl2 import SDL_KEYDOWN, SDLK_RIGHT, SDL_KEYUP, SDLK_LEFT
 def right_down(e):
-    pass
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
+
 
 def right_up(e):
-    pass
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
+
 
 def left_down(e):
-    pass
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
+
 
 def left_up(e):
-    pass
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
+
 
 
 class Idle:
@@ -20,7 +24,9 @@ class Idle:
         pass
 
     def enter(self, e):
-
+        self.player.row_index = 0
+        self.player.cols=13
+        self.dir=0
         pass
 
     def exit(self, e):
@@ -34,10 +40,10 @@ class Idle:
         sx = self.player.frame * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
 
-        Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height + 30,
+        Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
         delay(0.2)
-        pass
+
 class Walk:
     def __init__(self, Player):
         self.player = Player
@@ -47,6 +53,10 @@ class Walk:
     def enter(self, e):
         self.player.row_index = 3
         self.player.cols=10
+        if right_down(e) or left_up(e):
+            self.player.dir = self.player.face_dir = 1
+        elif left_down(e) or right_up(e):
+            self.player.dir = self.player.face_dir = -1
         pass
 
     def exit(self, e):
@@ -63,7 +73,8 @@ class Walk:
 
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
-        delay(0.2)
+        delay(0.05)
+    def handle_event(self, e):
         pass
 class Player:
     Image = None
@@ -76,7 +87,7 @@ class Player:
         self.y = 300
         self.frame = 0
         self.face_dir=1
-
+        self.dir=0
         self.cols = 13
         self.rows = 4
         self.row_index = 0
@@ -88,9 +99,10 @@ class Player:
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
         self.state_machine = StateMachine(
-            self.WALK,
+            self.IDLE,
             {
-                self.IDLE: { },
+                self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK },
+                self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE},
             }
         )
 
@@ -103,5 +115,5 @@ class Player:
         pass
 
     def handle_event(self, event):
-        #self.state_machine.handle_event(event)
+        self.state_machine.handle_state_event(('INPUT',event))
         pass
