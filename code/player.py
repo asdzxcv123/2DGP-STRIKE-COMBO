@@ -95,6 +95,12 @@ class RUN:
         pass
 
     def enter(self, e):
+        if self.player.face_dir==1:
+            self.player.row_index = 4
+        else:
+            self.player.row_index = 5
+        self.player.cols=7
+
         pass
 
     def exit(self, e):
@@ -102,10 +108,22 @@ class RUN:
         pass
 
     def do(self):
+        self.player.frame = (self.player.frame + 1) % self.player.cols
+        self.player.x += self.player.face_dir * 10
+
 
         pass
 
     def draw(self):
+        sx = self.player.frame * self.player.frame_width
+        sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
+        if  self.player.face_dir==1:
+            self.player.row_index=4
+        else:
+            self.player.row_index=5
+        Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
+                               self.player.x, self.player.y, 400, 300)
+        delay(0.03)
 
         pass
 
@@ -133,7 +151,7 @@ class Player:
         self.WALK = Walk(self)
         self.RUN = RUN(self)
         self.state_machine = StateMachine(
-            self.IDLE,
+            self.RUN,
             {
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK },
                 self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE},
