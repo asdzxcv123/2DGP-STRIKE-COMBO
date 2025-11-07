@@ -1,4 +1,6 @@
 from pico2d import *
+
+from code import game_framework
 from code.state_machine import StateMachine
 from sdl2 import *
 
@@ -18,8 +20,8 @@ JUMP_SPEED_MPM = (JUMP_SPEED_KMPH * 1000.0 / 60.0)
 JUMP_SPEED_MPS = (JUMP_SPEED_MPM / 60.0)
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
-
-TIME_PER_ACTION = 0.5
+FRAMES_PER_ACTION = 13
+TIME_PER_ACTION = 2.0
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 
 
@@ -67,11 +69,11 @@ class Idle:
         pass
 
     def do(self):
-        self.player.frame = (self.player.frame + 1) % self.player.cols
+        self.player.frame = (self.player.frame + (ACTION_PER_TIME/2)*FRAMES_PER_ACTION*game_framework.frame_time) % self.player.cols
         pass
 
     def draw(self):
-        sx = self.player.frame * self.player.frame_width
+        sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if self.player.face_dir == 1:
             self.player.row_index=0
@@ -81,7 +83,7 @@ class Idle:
                                self.player.x, self.player.y, 400, 300)
 
 
-        delay(0.2)
+
 
 class Walk:
     def __init__(self, Player):
@@ -112,12 +114,14 @@ class Walk:
         pass
 
     def do(self):
-        self.player.frame = (self.player.frame + 1) % self.player.cols
-        self.player.x += self.player.face_dir * 5
+        self.player.frame = (self.player.frame + (
+                    ACTION_PER_TIME*1.5) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
+
+        self.player.x += WALK_SPEED_PPS*game_framework.frame_time*self.player.face_dir
         pass
 
     def draw(self):
-        sx = self.player.frame * self.player.frame_width
+        sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=2
@@ -125,7 +129,7 @@ class Walk:
             self.player.row_index=3
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
-        delay(0.05)
+
 
 class Run:
     def __init__(self, Player):
@@ -146,14 +150,16 @@ class Run:
         pass
 
     def do(self):
-        self.player.frame = (self.player.frame + 1) % self.player.cols
-        self.player.x += self.player.face_dir * 10
+        self.player.frame = (self.player.frame + (
+                    ACTION_PER_TIME*1.3) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
+
+        self.player.x += self.player.face_dir*RUN_SPEED_PPS*game_framework.frame_time
 
 
         pass
 
     def draw(self):
-        sx = self.player.frame * self.player.frame_width
+        sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=4
@@ -161,7 +167,7 @@ class Run:
             self.player.row_index=5
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
-        delay(0.03)
+
 
         pass
 
@@ -180,19 +186,21 @@ class Jump:
 
         pass
     def do(self):
-        self.player.frame = (self.player.frame + 1) % self.player.cols
+        self.player.frame = (self.player.frame + (
+                    ACTION_PER_TIME) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
         pass
     def draw(self):
-        sx = self.player.frame * self.player.frame_width
+        sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=6
         else:
             self.player.row_index=7
+
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
-        delay(0.1)
+
         pass
 
 
