@@ -15,10 +15,9 @@ WALK_SPEED_MPM = (WALK_SPEED_KMPH * 1000.0 / 60.0)
 WALK_SPEED_MPS = (WALK_SPEED_MPM / 60.0)
 WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
-JUMP_SPEED_KMPH = 2.0
-JUMP_SPEED_MPM = (JUMP_SPEED_KMPH * 1000.0 / 60.0)
-JUMP_SPEED_MPS = (JUMP_SPEED_MPM / 60.0)
-JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
+JUMP_VELOCITY_MPS = 10.0
+JUMP_VELOCITY_PPS = (JUMP_VELOCITY_MPS * PIXEL_PER_METER)
+
 
 FRAMES_PER_ACTION = 13
 TIME_PER_ACTION = 2.0
@@ -26,9 +25,10 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 
 
 GRAVITY = 9.8
+GRAVITY_PPS = (GRAVITY*PIXEL_PER_METER)
 
-
-
+FRICTION_MPS = 5.0
+FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -219,6 +219,10 @@ class Player:
         self.cols = 13
         self.rows = 8
         self.row_index = 0
+
+        self.move_speed = 0
+        self.yv = 0
+        self.ground_y = self.y
 
         # 프레임 크기 계산
         self.frame_width  = Player.Image.w // self.cols
