@@ -1,4 +1,4 @@
-from pico2d import load_image, delay
+from pico2d import *
 from code.state_machine import StateMachine
 from sdl2 import SDL_KEYDOWN, SDLK_RIGHT, SDL_KEYUP, SDLK_LEFT
 def right_down(e):
@@ -55,7 +55,7 @@ class Idle:
 class Walk:
     def __init__(self, Player):
         self.player = Player
-
+        self.keydown_time = 0
         pass
 
     def enter(self, e):
@@ -68,6 +68,13 @@ class Walk:
             self.player.dir = self.player.face_dir = 1
         elif left_down(e) or right_up(e):
             self.player.dir = self.player.face_dir = -1
+        now = get_time()
+        if now - self.keydown_time < 0.5:
+            self.player.state_machine.cur_state.exit(e)
+            self.player.state_machine.cur_state = self.player.RUN
+            self.player.state_machine.cur_state.enter(e)
+            self.player.state_machine.next_state = self.player.RUN
+        self.keydown_time = now
         pass
 
     def exit(self, e):
@@ -151,11 +158,11 @@ class Player:
         self.WALK = Walk(self)
         self.RUN = RUN(self)
         self.state_machine = StateMachine(
-            self.RUN,
+            self.IDLE,
             {
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK },
                 self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE},
-
+                self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE}
             }
         )
 
