@@ -135,6 +135,20 @@ class RUN:
 
         pass
 
+class JUMP:
+    def __init__(self,Player):
+        self.player=Player
+        pass
+    def enter(self,e):
+        pass
+    def exit(self,e):
+        pass
+    def do(self):
+        pass
+    def draw(self):
+        pass
+
+
 class Player:
     Image = None
     def __init__(self):
