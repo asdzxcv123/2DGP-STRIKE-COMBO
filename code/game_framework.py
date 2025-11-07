@@ -22,6 +22,7 @@ def push_mode(mode):
     pass
 
 def pop_mode():
+
     global stack
     if(len(stack)>0):
         stack[-1].finish()
@@ -53,6 +54,7 @@ def run(start_mode):
         current_time += frame_time
         frame_rate = 1.0 / frame_time
 
-while (len(stack) > 0):
-    stack[-1].finish()
-    stack.pop()
+    while (len(stack) > 0):
+        stack[-1].finish()
+        stack.pop()
+
