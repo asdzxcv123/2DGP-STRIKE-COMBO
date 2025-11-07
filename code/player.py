@@ -15,7 +15,7 @@ WALK_SPEED_MPM = (WALK_SPEED_KMPH * 1000.0 / 60.0)
 WALK_SPEED_MPS = (WALK_SPEED_MPM / 60.0)
 WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
-JUMP_VELOCITY_MPS = 10.0
+JUMP_VELOCITY_MPS = 7.0
 JUMP_VELOCITY_PPS = (JUMP_VELOCITY_MPS * PIXEL_PER_METER)
 
 
@@ -28,7 +28,7 @@ GRAVITY = 9.8
 GRAVITY_PPS = (GRAVITY*PIXEL_PER_METER)
 
 FRICTION_MPS = 5.0
-FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)
+FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)*0.15
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -63,6 +63,9 @@ class Idle:
             self.player.row_index = 0
         self.player.cols=13
         self.dir=0
+        self.player.ground_y = self.player.y
+        self.player.yv=0
+        self.player.move_speed=0
         pass
 
     def exit(self, e):
@@ -97,10 +100,12 @@ class Walk:
         else:
             self.player.row_index = 3
         self.player.cols=10
+
         if right_down(e) or left_up(e):
             self.player.dir = self.player.face_dir = 1
         elif left_down(e) or right_up(e):
             self.player.dir = self.player.face_dir = -1
+
         now = get_time()
         if now - self.keydown_time < 0.5:
             self.player.state_machine.cur_state.exit(e)
@@ -108,9 +113,13 @@ class Walk:
             self.player.state_machine.cur_state.enter(e)
             self.player.state_machine.next_state = self.player.RUN
         self.keydown_time = now
+
+        self.player.move_speed = WALK_SPEED_PPS
+
         pass
 
     def exit(self, e):
+        self.player.last_speed = self.player.move_speed
         pass
 
     def do(self):
@@ -118,6 +127,7 @@ class Walk:
                     ACTION_PER_TIME*1.5) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
         self.player.x += WALK_SPEED_PPS*game_framework.frame_time*self.player.face_dir
+        self.player.last_move_speed = self.player.move_speed
         pass
 
     def draw(self):
@@ -143,10 +153,11 @@ class Run:
             self.player.row_index = 5
         self.player.cols=7
 
+        self.player.move_speed = RUN_SPEED_PPS
         pass
 
     def exit(self, e):
-
+        self.player.last_speed = self.player.move_speed*50
         pass
 
     def do(self):
@@ -154,7 +165,7 @@ class Run:
                     ACTION_PER_TIME*1.3) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
         self.player.x += self.player.face_dir*RUN_SPEED_PPS*game_framework.frame_time
-
+        self.player.last_move_speed = self.player.move_speed
 
         pass
 
@@ -174,21 +185,46 @@ class Run:
 class Jump:
     def __init__(self,Player):
         self.player=Player
+
         pass
     def enter(self,e):
         self.player.cols=5
+
         if self.player.face_dir==1:
             self.player.row_index = 6
         else:
             self.player.row_index = 7
+
+        if self.player.yv==0:
+            self.player.yv=JUMP_VELOCITY_PPS
+        self.event = None
         pass
     def exit(self,e):
-
+        self.event = None
         pass
     def do(self):
         self.player.frame = (self.player.frame + (
-                    ACTION_PER_TIME) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
+                    ACTION_PER_TIME) * FRAMES_PER_ACTION * game_framework.frame_time) % (self.player.cols-1)
+        self.player.yv -= GRAVITY_PPS * game_framework.frame_time
+        self.player.y += self.player.yv * game_framework.frame_time
 
+        if self.player.move_speed>0:
+            self.player.move_speed -= FRICTION_PPS*game_framework.frame_time
+
+            if self.player.move_speed<0:
+                self.player.move_speed=0
+
+
+        self.player.x += self.player.face_dir*self.player.move_speed*game_framework.frame_time
+
+        if self.player.y <= self.player.ground_y:
+            self.player.y = self.player.ground_y
+            self.player.yv = 0
+
+            self.player.state_machine.cur_state.exit(self.event)
+            self.player.state_machine.cur_state = self.player.IDLE
+            self.player.state_machine.cur_state.enter(self.event)
+            self.player.state_machine.next_state = self.player.IDLE
         pass
     def draw(self):
         sx = int(self.player.frame) * self.player.frame_width
@@ -220,6 +256,7 @@ class Player:
         self.rows = 8
         self.row_index = 0
 
+        self.last_speed = 0
         self.move_speed = 0
         self.yv = 0
         self.ground_y = self.y
