@@ -1,3 +1,6 @@
+from math import gamma
+
+from code import game_world
 from code.player import Player
 from pico2d import *
 
@@ -19,14 +22,15 @@ def handle_events():
 def reset_world():
     global player
     player = Player()
+    game_world.add_object(player, 0)
 
 def update_world():
-    player.update()
+    game_world.update()
     pass
 
 def render_world():
     clear_canvas()
-    player.draw()
+    game_world.render()
     update_canvas()
 
 running = True
