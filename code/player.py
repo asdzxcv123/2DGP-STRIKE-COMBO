@@ -24,7 +24,10 @@ class Idle:
         pass
 
     def enter(self, e):
-        self.player.row_index = 0
+        if self.player.face_dir==-1:
+            self.player.row_index = 1
+        else:
+            self.player.row_index = 0
         self.player.cols=13
         self.dir=0
         pass
@@ -39,9 +42,14 @@ class Idle:
     def draw(self):
         sx = self.player.frame * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
-
+        if self.player.face_dir == 1:
+            self.player.row_index=0
+        else:
+            self.player.row_index=1
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
+
+
         delay(0.2)
 
 class Walk:
@@ -51,7 +59,10 @@ class Walk:
         pass
 
     def enter(self, e):
-        self.player.row_index = 3
+        if self.player.face_dir==1:
+            self.player.row_index = 2
+        else:
+            self.player.row_index = 3
         self.player.cols=10
         if right_down(e) or left_up(e):
             self.player.dir = self.player.face_dir = 1
@@ -70,12 +81,13 @@ class Walk:
     def draw(self):
         sx = self.player.frame * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
-
+        if  self.player.face_dir==1:
+            self.player.row_index=2
+        else:
+            self.player.row_index=3
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
         delay(0.05)
-    def handle_event(self, e):
-        pass
 
 class RUN:
     def __init__(self, Player):
@@ -86,12 +98,15 @@ class RUN:
         pass
 
     def exit(self, e):
+
         pass
 
     def do(self):
+
         pass
 
     def draw(self):
+
         pass
 
 class Player:
@@ -107,7 +122,7 @@ class Player:
         self.face_dir=1
         self.dir=0
         self.cols = 13
-        self.rows = 4
+        self.rows = 8
         self.row_index = 0
 
         # 프레임 크기 계산
@@ -116,6 +131,7 @@ class Player:
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
+        self.RUN = RUN(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
