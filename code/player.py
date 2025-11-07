@@ -1,6 +1,6 @@
 from pico2d import *
 from code.state_machine import StateMachine
-from sdl2 import SDL_KEYDOWN, SDLK_RIGHT, SDL_KEYUP, SDLK_LEFT, SDLK_LCTRL
+from sdl2 import *
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
 
@@ -18,6 +18,9 @@ def left_up(e):
 
 def L_ctrl_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LCTRL
+
+def C_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_c
 
 class Idle:
     def __init__(self, Player):
@@ -97,7 +100,7 @@ class Walk:
                                self.player.x, self.player.y, 400, 300)
         delay(0.05)
 
-class RUN:
+class Run:
     def __init__(self, Player):
         self.player = Player
         pass
@@ -135,7 +138,7 @@ class RUN:
 
         pass
 
-class JUMP:
+class Jump:
     def __init__(self,Player):
         self.player=Player
         pass
@@ -188,14 +191,15 @@ class Player:
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
-        self.RUN = RUN(self)
-        self.JUMP = JUMP(self)
+        self.RUN = Run(self)
+        self.JUMP = Jump(self)
         self.state_machine = StateMachine(
-            self.JUMP,
+            self.IDLE,
             {
-                self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK },
-                self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, L_ctrl_down: self.RUN},
-                self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE}
+                self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK, C_down: self.JUMP},
+                self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, L_ctrl_down: self.RUN, C_down: self.JUMP},
+                self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, C_down: self.JUMP},
+                self.JUMP:{}
             }
         )
 
