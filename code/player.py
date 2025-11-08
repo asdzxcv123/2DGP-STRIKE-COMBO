@@ -5,17 +5,17 @@ from code.state_machine import StateMachine
 from sdl2 import *
 
 PIXEL_PER_METER = (10.0 / 0.3)
-RUN_SPEED_KMPH = 30.0
+RUN_SPEED_KMPH = 21.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
-WALK_SPEED_KMPH = 7.0
+WALK_SPEED_KMPH = 9.0
 WALK_SPEED_MPM = (WALK_SPEED_KMPH * 1000.0 / 60.0)
 WALK_SPEED_MPS = (WALK_SPEED_MPM / 60.0)
 WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
-JUMP_VELOCITY_MPS = 7.0
+JUMP_VELOCITY_MPS = 5.0
 JUMP_VELOCITY_PPS = (JUMP_VELOCITY_MPS * PIXEL_PER_METER)
 
 
@@ -27,8 +27,8 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 GRAVITY = 9.8
 GRAVITY_PPS = (GRAVITY*PIXEL_PER_METER)
 
-FRICTION_MPS = 2.0
-FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)*0.15
+FRICTION_MPS = 4.0
+FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)*0.01
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -173,6 +173,7 @@ class Run:
                     ACTION_PER_TIME*1.3) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
         self.player.x += self.player.face_dir*RUN_SPEED_PPS*game_framework.frame_time
+        self.player.move_speed = RUN_SPEED_PPS
         self.player.last_move_speed = self.player.move_speed
 
         pass
@@ -265,6 +266,28 @@ class Jump:
 
         Player.Image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                self.player.x, self.player.y, 400, 300)
+
+        pass
+
+class Attack:
+    def __init__(self,Player):
+        self.player=Player
+
+        pass
+
+    def enter(self):
+
+        pass
+
+    def exit(self):
+
+        pass
+
+    def do(self):
+
+        pass
+
+    def draw(self):
 
         pass
 
