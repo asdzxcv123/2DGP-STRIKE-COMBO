@@ -5,7 +5,7 @@ from code.state_machine import StateMachine
 from sdl2 import *
 
 PIXEL_PER_METER = (10.0 / 0.3)
-RUN_SPEED_KMPH = 20.0
+RUN_SPEED_KMPH = 30.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -27,7 +27,7 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 GRAVITY = 9.8
 GRAVITY_PPS = (GRAVITY*PIXEL_PER_METER)
 
-FRICTION_MPS = 5.0
+FRICTION_MPS = 2.0
 FRICTION_PPS = (FRICTION_MPS * PIXEL_PER_METER)*0.15
 
 def right_down(e):
@@ -51,6 +51,13 @@ def L_ctrl_down(e):
 def C_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_c
 
+def make_keydown_event(key):
+    K = type('K', (), {})()
+    K.type = SDL_KEYDOWN
+    K.key  = key
+    return ('INPUT', K)
+
+
 class Idle:
     def __init__(self, Player):
         self.player = Player
@@ -69,6 +76,7 @@ class Idle:
         pass
 
     def exit(self, e):
+        self.player.last_speed=self.player.move_speed
         pass
 
     def do(self):
@@ -157,7 +165,7 @@ class Run:
         pass
 
     def exit(self, e):
-        self.player.last_speed = self.player.move_speed*50
+        self.player.last_speed = self.player.move_speed
         pass
 
     def do(self):
@@ -189,7 +197,7 @@ class Jump:
         pass
     def enter(self,e):
         self.player.cols=5
-
+        self.player.move_speed=self.player.last_speed
         if self.player.face_dir==1:
             self.player.row_index = 6
         else:
@@ -216,16 +224,37 @@ class Jump:
 
 
         self.player.x += self.player.face_dir*self.player.move_speed*game_framework.frame_time
-
         if self.player.y <= self.player.ground_y:
             self.player.y = self.player.ground_y
             self.player.yv = 0
 
+            held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+            held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+            held_ctrl = self.player.key_down_states.get(SDLK_LCTRL, False)
+
             self.player.state_machine.cur_state.exit(self.event)
-            self.player.state_machine.cur_state = self.player.IDLE
-            self.player.state_machine.cur_state.enter(self.event)
-            self.player.state_machine.next_state = self.player.IDLE
-        pass
+
+            if held_right ^ held_left:
+
+                self.player.face_dir = 1 if held_right else -1
+                self.player.dir = self.player.face_dir
+
+                ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
+
+                if held_ctrl:
+                    self.player.state_machine.cur_state = self.player.RUN
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.RUN
+                else:
+                    self.player.state_machine.cur_state = self.player.WALK
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.WALK
+            else:
+
+                self.player.state_machine.cur_state = self.player.IDLE
+                self.player.state_machine.cur_state.enter(make_keydown_event(SDLK_RIGHT) if False else self.event)
+                self.player.state_machine.next_state = self.player.IDLE
+
     def draw(self):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
@@ -246,6 +275,8 @@ class Player:
 
         if Player.Image == None:
             Player.Image = load_image('sprite/player/player_motion.png')
+        self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
+        self.wait_neutral = False  # 완전 중립을 기다리는 중인지
 
         self.x = 400
         self.y = 300
@@ -260,6 +291,7 @@ class Player:
         self.move_speed = 0
         self.yv = 0
         self.ground_y = self.y
+        self.key_down_states={}
 
         # 프레임 크기 계산
         self.frame_width  = Player.Image.w // self.cols
@@ -278,6 +310,7 @@ class Player:
                 self.JUMP:{}
             }
         )
+        self.landing_lock_until = 0.0
 
     def update(self):
         self.state_machine.update()
@@ -288,5 +321,37 @@ class Player:
         pass
 
     def handle_event(self, event):
-        self.state_machine.handle_state_event(('INPUT',event))
+        if event.type == SDL_KEYDOWN:
+            if self.key_down_states.get(event.key, False):
+                return
+            self.key_down_states[event.key] = True
+        elif event.type == SDL_KEYUP:
+            self.key_down_states[event.key] = False
+
+
+        if self.landing_lock and event.type in (SDL_KEYDOWN, SDL_KEYUP) and event.key in (SDLK_RIGHT, SDLK_LEFT,
+                                                                                          SDLK_LCTRL):
+            held_right = self.key_down_states.get(SDLK_RIGHT, False)
+            held_left = self.key_down_states.get(SDLK_LEFT, False)
+            held_ctrl = self.key_down_states.get(SDLK_LCTRL, False)
+
+            if not self.wait_neutral:
+
+                if not (held_right or held_left or held_ctrl):
+                    self.wait_neutral = True
+                return
+
+
+            if event.type == SDL_KEYDOWN:
+                self.landing_lock = False
+                self.wait_neutral = False
+                self.state_machine.handle_state_event(('INPUT', event))
+                return
+            else:
+
+                return
+
+
+        self.state_machine.handle_state_event(('INPUT', event))
         pass
+
