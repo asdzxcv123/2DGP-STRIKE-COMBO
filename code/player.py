@@ -276,18 +276,16 @@
     class Attack:
         def __init__(self,Player):
             self.player=Player
-            self.keydown_time = 0
             pass
 
         def enter(self,e):
-            self.player.Image=load_image('sprite/player/player_attack.png')
-            self.player.cols=10
+
             if self.player.face_dir==1:
                 self.player.row_index=0
             if self.player.face_dir==-1:
                 self.player.row_index=0
             now = get_time()
-            if now - self.keydown_time < 0.5:
+
                 pass
 
             pass
@@ -328,6 +326,9 @@
             self.yv = 0
             self.ground_y = self.y
             self.key_down_states={}
+
+            self.combo_stage = 0
+            self.last_attack_time = 0.0
 
             # 프레임 크기 계산
             self.frame_width  = Player.Image.w // self.cols
