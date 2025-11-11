@@ -392,14 +392,44 @@ class Attack:
         self.player.image.clip_draw(sx-30, sy, self.player.frame_width, self.player.frame_height,
                                     self.player.x, self.player.y, 400, 300)
 
+class Run_Attack:
+    def __init__(self, Player):
+        self.player = Player
 
+    def enter(self,e):
+        pass
 
+    def exit(self,e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+        pass
+
+class Jump_Attack:
+    def __init__(self, Player):
+        self.player = Player
+
+    def enter(self,e):
+        pass
+
+    def exit(self,e):
+        pass
+
+    def do(self):
+        pass
+
+    def draw(self):
+        pass
 
 class Player:
     Image = None
     def __init__(self):
         self.image_motion = load_image('sprite/player/player_motion.png')
         self.image_attack = load_image('sprite/player/player_attack.png')
+        self.image_MtoA=load_image('sprite/player/motion_attack.png')
         self.image = self.image_motion
         self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
         self.wait_neutral = False  # 완전 중립을 기다리는 중인지
