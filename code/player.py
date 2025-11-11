@@ -286,14 +286,23 @@ class Attack:
         self.player.image = self.player.image_attack
         self.player.frame = 0
         self.player.move_speed = 0
-        self.player.combo_stage=1
+
         self.player.rows = 10
         self.player.cols=9
         self.player.frame_width = self.player.image.w // self.player.cols
         self.player.frame_height = self.player.image.h // self.player.rows
+
+        self.player.last_attack_time = now
+
+        if now - self.player.last_attack_time < 0.8:
+            self.player.combo_stage = (self.player.combo_stage % 4) + 1
+        else:
+            self.player.combo_stage = 1
+        self.next_combo_input_buffered = False
+
         if self.player.combo_stage == 1:
             self.player.cols = 5
-            self.animation_speed_pps = (ACTION_PER_TIME * 2.5) * FRAMES_PER_ACTION
+            self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
         elif self.player.combo_stage == 2:
             self.player.cols = 5
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
@@ -302,10 +311,10 @@ class Attack:
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
         elif self.player.combo_stage == 4:
             self.player.cols = 9
-            self.animation_speed_pps = (ACTION_PER_TIME * 2.5) * FRAMES_PER_ACTION
-        elif self.player.combo_stage == 5:
-            self.player.cols = 8
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
+        # elif self.player.combo_stage == 5:
+        #     self.player.cols = 8
+        #     self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
 
 
         base_row = (self.player.combo_stage - 1) * 2
@@ -324,38 +333,48 @@ class Attack:
         self.player.rows = 8
         self.player.frame_width = self.player.image.w // self.player.cols
         self.player.frame_height = self.player.image.h // self.player.rows
+
+        if not self.next_combo_input_buffered:
+            self.player.combo_stage = 0
         pass
 
     def do(self):
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
         if self.player.frame >= self.player.cols:
-            self.player.state_machine.cur_state.exit(None)
-            self.player.combo_stage = 0
-            self.player.state_machine.cur_state = self.player.IDLE
-            self.player.state_machine.cur_state.enter(None)
-            held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
-            held_left = self.player.key_down_states.get(SDLK_LEFT, False)
-            held_ctrl = self.player.key_down_states.get(SDLK_LCTRL, False)
-            if held_right ^ held_left:
 
-                self.player.face_dir = 1 if held_right else -1
-                self.player.dir = self.player.face_dir
+            if self.next_combo_input_buffered:
+                self.player.state_machine.cur_state.exit(None)
+                self.player.state_machine.cur_state = self.player.ATTACK
+                self.player.state_machine.cur_state.enter(None)
 
-                ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
-
-                if held_ctrl:
-                    self.player.state_machine.cur_state = self.player.RUN
-                    self.player.state_machine.cur_state.enter(ev)
-                    self.player.state_machine.next_state = self.player.RUN
-                else:
-                    self.player.state_machine.cur_state = self.player.WALK
-                    self.player.state_machine.cur_state.enter(ev)
-                    self.player.state_machine.next_state = self.player.WALK
             else:
-
+                self.player.state_machine.cur_state.exit(None)
+                self.player.combo_stage = 0
                 self.player.state_machine.cur_state = self.player.IDLE
-                self.player.state_machine.cur_state.enter(make_keydown_event(SDLK_RIGHT) if False else None)
-                self.player.state_machine.next_state = self.player.IDLE
+                self.player.state_machine.cur_state.enter(None)
+                held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+                held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+                held_ctrl = self.player.key_down_states.get(SDLK_LCTRL, False)
+                if held_right ^ held_left:
+
+                    self.player.face_dir = 1 if held_right else -1
+                    self.player.dir = self.player.face_dir
+
+                    ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
+
+                    if held_ctrl:
+                        self.player.state_machine.cur_state = self.player.RUN
+                        self.player.state_machine.cur_state.enter(ev)
+                        self.player.state_machine.next_state = self.player.RUN
+                    else:
+                        self.player.state_machine.cur_state = self.player.WALK
+                        self.player.state_machine.cur_state.enter(ev)
+                        self.player.state_machine.next_state = self.player.WALK
+                else:
+
+                    self.player.state_machine.cur_state = self.player.IDLE
+                    self.player.state_machine.cur_state.enter(make_keydown_event(SDLK_RIGHT) if False else None)
+                    self.player.state_machine.next_state = self.player.IDLE
 
         pass
 
