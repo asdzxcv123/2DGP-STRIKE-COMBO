@@ -275,7 +275,11 @@ class Jump:
 class Attack:
     def __init__(self,Player):
         self.player=Player
+        self.next_combo_input_buffered = False
         pass
+
+    def buffer_combo_input(self):
+        self.next_combo_input_buffered = True
 
     def enter(self,e):
         now = get_time()
@@ -439,6 +443,9 @@ class Player:
         elif event.type == SDL_KEYUP:
             self.key_down_states[event.key] = False
 
+        if self.state_machine.cur_state == self.ATTACK and X_down(('INPUT', event)):
+            self.ATTACK.buffer_combo_input()
+            return
 
         if self.landing_lock and event.type in (SDL_KEYDOWN, SDL_KEYUP) and event.key in (SDLK_RIGHT, SDLK_LEFT,
                                                                                           SDLK_LCTRL):
