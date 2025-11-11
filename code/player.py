@@ -282,11 +282,14 @@ class Attack:
         self.player.image = self.player.image_attack
         self.player.frame = 0
         self.player.move_speed = 0
-        self.player.combo_stage=6
-        self.player.rows = 14
+        self.player.combo_stage=5
+        self.player.rows = 10
+        self.player.cols=9
+        self.player.frame_width = self.player.image.w // self.player.cols
+        self.player.frame_height = self.player.image.h // self.player.rows
         if self.player.combo_stage == 1:
             self.player.cols = 5
-            self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
+            self.animation_speed_pps = (ACTION_PER_TIME * 1.0) * FRAMES_PER_ACTION
         elif self.player.combo_stage == 2:
             self.player.cols = 5
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
@@ -299,12 +302,8 @@ class Attack:
         elif self.player.combo_stage == 5:
             self.player.cols = 8
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
-        elif self.player.combo_stage == 6:
-            self.player.cols = 7
-            self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
-        elif self.player.combo_stage == 7:
-            self.player.cols = 7
-            self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
+
+
         base_row = (self.player.combo_stage - 1) * 2
         self.player.row_index = base_row
         if self.player.face_dir == 1:
@@ -312,8 +311,7 @@ class Attack:
         else:
             self.player.row_index = base_row + 1
 
-        self.player.frame_width = self.player.image.w // self.player.cols
-        self.player.frame_height = self.player.image.h // self.player.rows
+
 
     def exit(self,e):
 
@@ -326,7 +324,6 @@ class Attack:
     def draw(self):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
-
         base_row = (self.player.combo_stage - 1) * 2
 
         if self.player.face_dir == 1:
@@ -334,7 +331,8 @@ class Attack:
         else:
             self.player.row_index = base_row + 1
 
-        self.player.image.clip_draw(sx+70, sy, self.player.frame_width, self.player.frame_height,
+
+        self.player.image.clip_draw(sx-30, sy, self.player.frame_width, self.player.frame_height,
                                     self.player.x, self.player.y, 400, 300)
 
 
@@ -382,7 +380,8 @@ class Player:
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK, C_down: self.JUMP},
                 self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, L_ctrl_down: self.RUN, C_down: self.JUMP},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, C_down: self.JUMP},
-                self.JUMP:{}
+                self.JUMP:{},
+                self.ATTACK:{}
             }
         )
         self.landing_lock_until = 0.0
