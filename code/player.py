@@ -480,15 +480,96 @@ class Jump_Attack:
         self.player = Player
 
     def enter(self,e):
+        self.player.image = self.player.image_MtoA
+        self.player.frame = 0
+
+        self.player.rows = 4
+        self.player.cols=7
+
+        self.animation_speed_pps = (ACTION_PER_TIME * 1.5) * FRAMES_PER_ACTION
+        self.player.frame_width = self.player.image.w // self.player.cols
+        self.player.frame_height = self.player.image.h // self.player.rows
+
+        if self.player.face_dir == 1:
+            self.player.row_index = 2
+        else:
+            self.player.row_index = 3
+
         pass
 
     def exit(self,e):
+        self.player.image = self.player.image_motion
+
+        self.player.cols = 13
+        self.player.rows = 8
+        self.player.frame_width = self.player.image.w // self.player.cols
+        self.player.frame_height = self.player.image.h // self.player.rows
+
         pass
 
     def do(self):
+        self.player.frame += self.animation_speed_pps * game_framework.frame_time
+
+
+        self.player.yv -= GRAVITY_PPS * game_framework.frame_time
+        self.player.y += self.player.yv * game_framework.frame_time
+
+        if self.player.move_speed > 0:
+            self.player.move_speed -= FRICTION_PPS * game_framework.frame_time
+            if self.player.move_speed < 0:
+                self.player.move_speed = 0
+        self.player.x += self.player.face_dir * self.player.move_speed * game_framework.frame_time
+
+
+        if self.player.y <= self.player.ground_y:
+            self.player.y = self.player.ground_y
+            self.player.yv = 0
+
+
+            self.player.state_machine.cur_state.exit(None)
+
+            held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+            held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+            held_ctrl = self.player.key_down_states.get(SDLK_LCTRL, False)
+
+            if held_right ^ held_left:
+                self.player.face_dir = 1 if held_right else -1
+                self.player.dir = self.player.face_dir
+                ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
+                if held_ctrl:
+                    self.player.state_machine.cur_state = self.player.RUN
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.RUN
+                else:
+                    self.player.state_machine.cur_state = self.player.WALK
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.WALK
+            else:
+                self.player.state_machine.cur_state = self.player.IDLE
+                self.player.state_machine.cur_state.enter(None)
+                self.player.state_machine.next_state = self.player.IDLE
+            return
+
+
+        if self.player.frame >= self.player.cols:
+            self.player.state_machine.cur_state.exit(None)
+
+
+            self.player.state_machine.cur_state = self.player.JUMP
+            self.player.state_machine.cur_state.enter(None)
         pass
 
     def draw(self):
+        if self.player.face_dir == 1:
+            self.player.row_index = 2
+        else:
+            self.player.row_index = 3
+
+        sx = int(self.player.frame) * self.player.frame_width
+        sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
+
+        self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
+                                    self.player.x, self.player.y, 400, 300)
         pass
 
 class Player:
@@ -499,7 +580,7 @@ class Player:
         self.image_MtoA=load_image('sprite/player/motion_attack.png')
         self.image = self.image_motion
         self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
-        self.wait_neutral = False  # 완전 중립을 기다리는 중인지
+        self.wait_neutral = False
 
         self.x = 400
         self.y = 300
@@ -529,6 +610,7 @@ class Player:
         self.JUMP = Jump(self)
         self.ATTACK = Attack(self)
         self.RUN_ATTACK=Run_Attack(self)
+        self.JUMP_ATTACK=Jump_Attack(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
@@ -538,9 +620,10 @@ class Player:
                             C_down: self.JUMP, X_down: self.ATTACK},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE,
                            C_down: self.JUMP, X_down: self.RUN_ATTACK},
-                self.JUMP:{},
+                self.JUMP:{X_down:self.JUMP_ATTACK},
                 self.ATTACK:{},
-                self.RUN_ATTACK:{}
+                self.RUN_ATTACK:{},
+                self.JUMP_ATTACK:{},
             }
         )
         self.landing_lock_until = 0.0
