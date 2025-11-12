@@ -132,14 +132,14 @@ class Walk:
             self.player.dir = self.player.face_dir = 1
         elif left_down(e) or right_up(e):
             self.player.dir = self.player.face_dir = -1
-
-        now = get_time()
-        if now - self.keydown_time < 0.5:
-            self.player.state_machine.cur_state.exit(e)
-            self.player.state_machine.cur_state = self.player.RUN
-            self.player.state_machine.cur_state.enter(e)
-            self.player.state_machine.next_state = self.player.RUN
-        self.keydown_time = now
+        if right_down(e) or left_down(e):
+            now = get_time()
+            if now - self.keydown_time < 0.5:
+                self.player.state_machine.cur_state.exit(e)
+                self.player.state_machine.cur_state = self.player.RUN
+                self.player.state_machine.cur_state.enter(e)
+                self.player.state_machine.next_state = self.player.RUN
+            self.keydown_time = now
 
         self.player.move_speed = WALK_SPEED_PPS
 
@@ -153,8 +153,38 @@ class Walk:
         self.player.frame = (self.player.frame + (
                     ACTION_PER_TIME*1.5) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
-        self.player.x += WALK_SPEED_PPS*game_framework.frame_time*self.player.face_dir
+
         self.player.last_move_speed = self.player.move_speed
+
+        held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+        held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+        held_up = self.player.key_down_states.get(SDLK_UP, False)
+        held_down = self.player.key_down_states.get(SDLK_DOWN, False)
+
+        x_dir = 0
+        if held_right:
+            x_dir += 1
+            self.player.face_dir = 1
+        if held_left:
+            x_dir -= 1
+            self.player.face_dir = -1
+        self.player.x += WALK_SPEED_PPS * game_framework.frame_time * x_dir
+
+        y_dir = 0
+        if held_up:
+            y_dir += 1
+        if held_down:
+            y_dir -= 1
+        self.player.y += (WALK_SPEED_PPS * 0.7) * game_framework.frame_time * y_dir
+
+        if not (held_right or held_left or held_up or held_down):
+            self.player.state_machine.cur_state.exit(None)
+            self.player.state_machine.cur_state = self.player.IDLE
+            self.player.state_machine.cur_state.enter(None)
+        elif (held_up and held_down) and (x_dir == 0):
+            self.player.state_machine.cur_state.exit(None)
+            self.player.state_machine.cur_state = self.player.IDLE
+            self.player.state_machine.cur_state.enter(None)
         pass
 
     def draw(self,camera):
@@ -193,9 +223,34 @@ class Run:
         self.player.frame = (self.player.frame + (
                     ACTION_PER_TIME*1.3) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 
-        self.player.x += self.player.face_dir*RUN_SPEED_PPS*game_framework.frame_time
+        held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+        held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+        held_up = self.player.key_down_states.get(SDLK_UP, False)
+        held_down = self.player.key_down_states.get(SDLK_DOWN, False)
+        x_dir = 0
+        if held_right:
+            x_dir += 1
+            self.player.face_dir = 1
+        if held_left:
+            x_dir -= 1
+            self.player.face_dir = -1
+        self.player.x += x_dir*RUN_SPEED_PPS*game_framework.frame_time
+        y_dir = 0
+        if held_up:
+            y_dir += 1
+        if held_down:
+            y_dir -= 1
+        self.player.y += (WALK_SPEED_PPS * 0.3) * game_framework.frame_time * y_dir
         self.player.move_speed = RUN_SPEED_PPS
         self.player.last_move_speed = self.player.move_speed
+
+
+        y_dir = 0
+        if self.player.key_down_states.get(SDLK_UP, False):
+            y_dir += 1
+        if self.player.key_down_states.get(SDLK_DOWN, False):
+            y_dir -= 1
+        self.player.y += (WALK_SPEED_PPS * 0.4) * game_framework.frame_time * y_dir
 
         pass
 
@@ -614,6 +669,7 @@ class Player:
         self.frame = 0
         self.face_dir=1
         self.dir=0
+        self.y_dir=0
         self.cols = 13
         self.rows = 8
         self.row_index = 0
@@ -641,10 +697,10 @@ class Player:
         self.state_machine = StateMachine(
             self.IDLE,
             {
-                self.IDLE: {right_down: self.WALK, left_down: self.WALK, right_up: self.WALK, left_up: self.WALK,
+                self.IDLE: {right_down: self.WALK, left_down: self.WALK,
+                            up_down: self.WALK, down_down:self.WALK,
                             C_down: self.JUMP, X_down: self.ATTACK},
-                self.WALK: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE, L_ctrl_down: self.RUN,
-                            C_down: self.JUMP, X_down: self.ATTACK},
+                self.WALK: {L_ctrl_down: self.RUN,C_down: self.JUMP, X_down: self.ATTACK},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE,
                            C_down: self.JUMP, X_down: self.RUN_ATTACK},
                 self.JUMP:{X_down:self.JUMP_ATTACK},

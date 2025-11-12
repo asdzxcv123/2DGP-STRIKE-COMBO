@@ -6,8 +6,8 @@ from code.camera import Camera
 
 CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
-WORLD_WIDTH = 1200  # 맵의 실제 총 너비
-WORLD_HEIGHT = 1000 # 맵의 실제 총 높이
+WORLD_WIDTH = 800  # 맵의 실제 총 너비
+WORLD_HEIGHT = 600 # 맵의 실제 총 높이
 
 player=None
 camera=None
