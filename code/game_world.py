@@ -1,3 +1,4 @@
+
 world=[[]]
 
 def add_object(o, depth=0):
@@ -15,10 +16,10 @@ def update():
             o.update()
     pass
 
-def render():
+def render(camera):
     for layer in world:
         for o in layer:
-            o.draw()
+            o.draw(camera)
 
     pass
 

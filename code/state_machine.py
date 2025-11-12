@@ -19,6 +19,6 @@ class StateMachine:
                 self.cur_state = self.next_state
                 return
         print(f'처리되지 않은 이벤트 {event_to_string(event)} 가 있습니다.')
-    def draw(self):
-        self.cur_state.draw()
+    def draw(self, camera):
+        self.cur_state.draw(camera)
 

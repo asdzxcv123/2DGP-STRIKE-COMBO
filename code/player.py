@@ -86,15 +86,19 @@ class Idle:
         self.player.frame = (self.player.frame + (ACTION_PER_TIME/2)*FRAMES_PER_ACTION*game_framework.frame_time) % self.player.cols
         pass
 
-    def draw(self):
+    def draw(self,camera):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if self.player.face_dir == 1:
             self.player.row_index=0
         else:
             self.player.row_index=1
+
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
+
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                               self.player.x, self.player.y, 400, 300)
+                               screen_x, screen_y, 400, 300)
 
 
 
@@ -141,15 +145,17 @@ class Walk:
         self.player.last_move_speed = self.player.move_speed
         pass
 
-    def draw(self):
+    def draw(self,camera):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=2
         else:
             self.player.row_index=3
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                               self.player.x, self.player.y, 400, 300)
+                               screen_x,screen_y, 400, 300)
 
 
 class Run:
@@ -181,15 +187,17 @@ class Run:
 
         pass
 
-    def draw(self):
+    def draw(self,camera):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=4
         else:
             self.player.row_index=5
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                               self.player.x, self.player.y, 400, 300)
+                               screen_x, screen_y, 400, 300)
 
 
         pass
@@ -259,16 +267,18 @@ class Jump:
                 self.player.state_machine.cur_state.enter(make_keydown_event(SDLK_RIGHT) if False else self.event)
                 self.player.state_machine.next_state = self.player.IDLE
 
-    def draw(self):
+    def draw(self,camera):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         if  self.player.face_dir==1:
             self.player.row_index=6
         else:
             self.player.row_index=7
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
 
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                               self.player.x, self.player.y, 400, 300)
+                               screen_x, screen_y, 400, 300)
 
         pass
 
@@ -378,7 +388,7 @@ class Attack:
 
         pass
 
-    def draw(self):
+    def draw(self,camera):
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         base_row = (self.player.combo_stage - 1) * 2
@@ -388,9 +398,10 @@ class Attack:
         else:
             self.player.row_index = base_row + 1
 
-
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
         self.player.image.clip_draw(sx-30, sy, self.player.frame_width, self.player.frame_height,
-                                    self.player.x, self.player.y, 400, 300)
+                                    screen_x, screen_y, 400, 300)
 
 class Run_Attack:
     def __init__(self, Player):
@@ -462,7 +473,7 @@ class Run_Attack:
                 self.player.state_machine.next_state = self.player.IDLE
         pass
 
-    def draw(self):
+    def draw(self,camera):
         if self.player.face_dir == 1:
             self.player.row_index = 0
         else:
@@ -470,9 +481,10 @@ class Run_Attack:
 
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
-
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                                    self.player.x, self.player.y, 400, 300)
+                                    screen_x, screen_y, 400, 300)
         pass
 
 class Jump_Attack:
@@ -559,17 +571,20 @@ class Jump_Attack:
             self.player.state_machine.cur_state.enter(None)
         pass
 
-    def draw(self):
+    def draw(self,camera):
         if self.player.face_dir == 1:
             self.player.row_index = 2
         else:
             self.player.row_index = 3
 
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
+
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
 
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
-                                    self.player.x, self.player.y, 400, 300)
+                                    screen_x, screen_y, 400, 300)
         pass
 
 class Player:
@@ -632,8 +647,8 @@ class Player:
         self.state_machine.update()
         pass
 
-    def draw(self):
-        self.state_machine.draw()
+    def draw(self,camera):
+        self.state_machine.draw(camera)
         pass
 
     def handle_event(self, event):
