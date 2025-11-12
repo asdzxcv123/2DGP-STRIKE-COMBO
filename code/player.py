@@ -532,14 +532,11 @@ class Run_Attack:
                 self.player.face_dir = 1 if held_right else -1
                 self.player.dir = self.player.face_dir
                 ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
-                if held_ctrl:
-                    self.player.state_machine.cur_state = self.player.RUN
-                    self.player.state_machine.cur_state.enter(ev)
-                    self.player.state_machine.next_state = self.player.RUN
-                else:
-                    self.player.state_machine.cur_state = self.player.WALK
-                    self.player.state_machine.cur_state.enter(ev)
-                    self.player.state_machine.next_state = self.player.WALK
+
+                self.player.state_machine.cur_state = self.player.RUN
+                self.player.state_machine.cur_state.enter(ev)
+                self.player.state_machine.next_state = self.player.RUN
+
             else:
                 self.player.state_machine.cur_state = self.player.IDLE
                 self.player.state_machine.cur_state.enter(None)

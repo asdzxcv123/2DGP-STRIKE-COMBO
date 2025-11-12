@@ -4,10 +4,10 @@ from code.player import Player
 from pico2d import *
 from code.camera import Camera
 from code.test_map import *
-CANVAS_WIDTH = 800
+CANVAS_WIDTH = 1200
 CANVAS_HEIGHT = 600
-WORLD_WIDTH = 1200  # 맵의 실제 총 너비
-WORLD_HEIGHT = 600 # 맵의 실제 총 높이
+WORLD_WIDTH = 4000  # 맵의 실제 총 너비
+WORLD_HEIGHT = 900 # 맵의 실제 총 높이
 
 player=None
 camera=None
@@ -30,7 +30,7 @@ def init():
     camera.world_size(WORLD_WIDTH, WORLD_HEIGHT)
 
     player = Player()
-    game_world.add_object(player, 0)
+    game_world.add_object(player, 1)
     game_world.add_object(road, 0)
 def update():
     game_world.update()
