@@ -2,7 +2,12 @@
 from code import game_world, game_framework
 from code.player import Player
 from pico2d import *
+from code.camera import Camera
 
+CANVAS_WIDTH = 1600
+CANVAS_HEIGHT = 600
+WORLD_WIDTH = 4000  # 맵의 실제 총 너비
+WORLD_HEIGHT = 1000 # 맵의 실제 총 높이
 
 player=None
 
