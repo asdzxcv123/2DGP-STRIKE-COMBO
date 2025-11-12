@@ -7,7 +7,7 @@ from code.test_map import *
 CANVAS_WIDTH = 1200
 CANVAS_HEIGHT = 600
 WORLD_WIDTH = 4000  # 맵의 실제 총 너비
-WORLD_HEIGHT = 900 # 맵의 실제 총 높이
+WORLD_HEIGHT = 600 # 맵의 실제 총 높이
 
 player=None
 camera=None
