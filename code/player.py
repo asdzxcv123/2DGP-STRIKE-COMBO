@@ -276,6 +276,12 @@ class Jump:
         pass
     def enter(self,e):
         self.player.cols=5
+        held_up = self.player.key_down_states.get(SDLK_UP, False)
+        held_down = self.player.key_down_states.get(SDLK_DOWN, False)
+        held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+        held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+        if (held_up ^ held_down)and (not held_left ^ held_right):
+            self.player.last_speed=0
         self.player.move_speed=self.player.last_speed
         if self.player.face_dir==1:
             self.player.row_index = 6
