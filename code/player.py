@@ -1,6 +1,7 @@
 from pico2d import *
 
-from code import game_framework
+from code import game_framework, game_world
+from code.bash_projectil import SwordP
 from code.state_machine import StateMachine
 from sdl2 import *
 
@@ -65,6 +66,9 @@ def C_down(e):
 
 def X_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_x
+
+def Q_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_q
 
 def make_keydown_event(key):
     K = type('K', (), {})()
@@ -147,6 +151,7 @@ class Walk:
 
     def exit(self, e):
         self.player.last_speed = self.player.move_speed
+
         pass
 
     def do(self):
@@ -722,6 +727,7 @@ class Player:
         self.state_machine.draw(camera)
         pass
 
+
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
             if self.key_down_states.get(event.key, False):
@@ -729,6 +735,9 @@ class Player:
             self.key_down_states[event.key] = True
         elif event.type == SDL_KEYUP:
             self.key_down_states[event.key] = False
+
+        if Q_down(('INPUT', event)):
+            self.fire_sword()
 
         if self.state_machine.cur_state == self.ATTACK and X_down(('INPUT', event)):
             self.ATTACK.buffer_combo_input()
@@ -759,4 +768,12 @@ class Player:
 
         self.state_machine.handle_state_event(('INPUT', event))
         pass
+    def fire_sword(self):
+        if(self.face_dir==1):
+            spawn_x=self.x+(5*self.face_dir)
+        else:
+            spawn_x = self.x + (100 * self.face_dir)
+        fire_aura=SwordP(spawn_x, self.y, self.face_dir)
+        game_world.add_object(fire_aura,1)
+
 
