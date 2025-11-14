@@ -383,7 +383,7 @@ class Attack:
         self.player.last_attack_time = now
 
         if now - self.player.last_attack_time < 0.8:
-            self.player.combo_stage = (self.player.combo_stage % 4) + 1
+            self.player.combo_stage = (self.player.combo_stage % 5) + 1
         else:
             self.player.combo_stage = 1
         self.next_combo_input_buffered = False
@@ -398,14 +398,17 @@ class Attack:
             self.player.cols = 6
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
         elif self.player.combo_stage == 4:
-            self.player.cols = 9
+            self.player.cols = 5
             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
-        # elif self.player.combo_stage == 5:
-        #     self.player.cols = 8
-        #     self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
+        elif self.player.combo_stage == 5:
+             self.player.cols = 8
+             self.player.frame=5
+             self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
 
-
-        base_row = (self.player.combo_stage - 1) * 2
+        if  self.player.combo_stage<4:
+            base_row = (self.player.combo_stage - 1) * 2
+        else:
+            base_row = (4 - 1) * 2
         self.player.row_index = base_row
         if self.player.face_dir == 1:
             self.player.row_index = base_row
@@ -427,6 +430,7 @@ class Attack:
         pass
 
     def do(self):
+
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
         if self.player.frame >= self.player.cols:
 
@@ -697,10 +701,27 @@ class Skill_Bash:
                 self.player.fire_sword()
                 self.fire_c=1
         if self.player.frame >= self.player.cols:
-
             self.player.state_machine.cur_state.exit(None)
-            self.player.state_machine.cur_state=self.player.IDLE
-            self.player.state_machine.cur_state.enter(None)
+
+            held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
+            held_left = self.player.key_down_states.get(SDLK_LEFT, False)
+            held_ctrl = self.player.key_down_states.get(SDLK_LCTRL, False)
+            if held_right ^ held_left:
+                self.player.face_dir = 1 if held_right else -1
+                self.player.dir = self.player.face_dir
+                ev = make_keydown_event(SDLK_RIGHT if held_right else SDLK_LEFT)
+                if held_ctrl:
+                    self.player.state_machine.cur_state = self.player.RUN
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.RUN
+                else:
+                    self.player.state_machine.cur_state = self.player.WALK
+                    self.player.state_machine.cur_state.enter(ev)
+                    self.player.state_machine.next_state = self.player.WALK
+            else:
+                self.player.state_machine.cur_state = self.player.IDLE
+                self.player.state_machine.cur_state.enter(None)
+                self.player.state_machine.next_state = self.player.IDLE
 
 
         pass
@@ -770,9 +791,11 @@ class Player:
                             up_down: self.WALK, down_down:self.WALK,
                             C_down: self.JUMP, X_down: self.ATTACK,
                             Q_down: self.BASH_SKILL},
-                self.WALK: {L_ctrl_down: self.RUN,C_down: self.JUMP, X_down: self.ATTACK},
+                self.WALK: {L_ctrl_down: self.RUN,C_down: self.JUMP,
+                            X_down: self.ATTACK, Q_down: self.BASH_SKILL},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE,
-                           C_down: self.JUMP, X_down: self.RUN_ATTACK},
+                           C_down: self.JUMP, X_down: self.RUN_ATTACK,
+                           Q_down: self.BASH_SKILL},
                 self.JUMP:{X_down:self.JUMP_ATTACK},
                 self.ATTACK:{},
                 self.RUN_ATTACK:{},
