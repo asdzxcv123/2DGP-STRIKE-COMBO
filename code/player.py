@@ -665,17 +665,59 @@ class Jump_Attack:
 class Skill_Bash:
     def __init__(self, Player):
         self.player=Player
+        self.fire_c=0
         pass
 
     def enter(self, e):
+        self.player.image = self.player.image_bash
+        self.player.frame = 0
+        self.fire_c = 0
+        self.player.rows = 2
+        self.player.cols = 6
+
+        self.animation_speed_pps = (ACTION_PER_TIME * 1.5) * FRAMES_PER_ACTION
+        self.player.frame_width = self.player.image.w // self.player.cols
+        self.player.frame_height = self.player.image.h // self.player.rows
         pass
 
-    def exit(self):
+    def exit(self,e=None):
+        self.player.image = self.player.image_motion
+
+        self.player.cols = 13
+        self.player.rows = 8
+        self.player.frame_width = self.player.image.w // self.player.cols
+        self.player.frame_height = self.player.image.h // self.player.rows
         pass
 
     def do(self):
+        self.player.frame += self.animation_speed_pps * game_framework.frame_time
+
+        if self.player.frame >= self.player.cols-3:
+            if self.fire_c==0:
+                self.player.fire_sword()
+                self.fire_c=1
+        if self.player.frame >= self.player.cols:
+
+            self.player.state_machine.cur_state.exit(None)
+            self.player.state_machine.cur_state=self.player.IDLE
+            self.player.state_machine.cur_state.enter(None)
+
+
         pass
     def draw(self,camera):
+        if self.player.face_dir == 1:
+            self.player.row_index = 0
+        else:
+            self.player.row_index = 1
+
+        screen_x = self.player.x - camera.left
+        screen_y = self.player.y - camera.bottom
+
+        sx = int(self.player.frame) * self.player.frame_width
+        sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
+
+        self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
+                                    screen_x, screen_y, 400, 300)
         pass
 
 
@@ -720,12 +762,14 @@ class Player:
         self.ATTACK = Attack(self)
         self.RUN_ATTACK=Run_Attack(self)
         self.JUMP_ATTACK=Jump_Attack(self)
+        self.BASH_SKILL=Skill_Bash(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK,
                             up_down: self.WALK, down_down:self.WALK,
-                            C_down: self.JUMP, X_down: self.ATTACK},
+                            C_down: self.JUMP, X_down: self.ATTACK,
+                            Q_down: self.BASH_SKILL},
                 self.WALK: {L_ctrl_down: self.RUN,C_down: self.JUMP, X_down: self.ATTACK},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE,
                            C_down: self.JUMP, X_down: self.RUN_ATTACK},
@@ -733,6 +777,7 @@ class Player:
                 self.ATTACK:{},
                 self.RUN_ATTACK:{},
                 self.JUMP_ATTACK:{},
+                self.BASH_SKILL:{},
             }
         )
         self.landing_lock_until = 0.0
@@ -754,8 +799,6 @@ class Player:
         elif event.type == SDL_KEYUP:
             self.key_down_states[event.key] = False
 
-        if Q_down(('INPUT', event)):
-            self.fire_sword()
 
         if self.state_machine.cur_state == self.ATTACK and X_down(('INPUT', event)):
             self.ATTACK.buffer_combo_input()
