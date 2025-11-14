@@ -19,7 +19,7 @@ class SwordP:
 
     def draw(self,camera):
         screen_x = self.x - camera.left
-        screen_y = (self.z - self.y) - camera.bottom # (z-y) 적용
+        screen_y = (self.z + self.y) - camera.bottom # (z-y) 적용
         if self.dir==1:
             SwordP.image.composite_draw(0, 'h', screen_x, screen_y, 200, 300)
         else:
