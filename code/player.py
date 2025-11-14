@@ -50,7 +50,7 @@ class Player:
         if self.face_dir==1:
             self.hurt_offset_x = -50
 
-        self.hurt_offset_y = -self.frame_height * 0.2  # 몸통이 약간 아래쪽
+        self.hurt_offset_y = -self.frame_height * 0.4  # 몸통이 약간 아래쪽
         self.hurt_offset_z = 0  # 발 중심 그대로
 
         self.draw_w = 400

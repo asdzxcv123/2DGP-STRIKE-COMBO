@@ -142,24 +142,39 @@ def check_collision_3d(hitbox, hurtbox):
     z_overlap = (z1_hit < z2_hurt) and (z2_hit > z1_hurt)
 
     return x_overlap and y_overlap and z_overlap
+
+
 def draw_3d_box(owner, box, camera):
     x1, y1, z1, x2, y2, z2 = box
 
-    # owner를 통해 scale_x, scale_y 접근
-    scaled_w = (x2 - x1) * owner.scale_x
-    scaled_h = (y2 - y1) * owner.scale_y
+    # --- 1. 지면 사각형 (X, Z) ---
+    # 박스의 맨 아래 높이(y1)를 기준으로 너비(x)와 깊이(z)를 그립니다.
+    # '발밑 영역'을 확인하기 좋습니다.
 
-    # 화면 중심 계산
-    cx = (x1 + x2) / 2
-    cy = y1
-    cz = (z1 + z2) / 2
+    # 지면 투영 (후면-좌측, 전면-우측)
+    g_sx1 = x1 - camera.left
+    g_sy1 = (z1 + y1) - camera.bottom  # 후면 (z1)
 
-    screen_x = cx
-    screen_y = cz + cy
+    g_sx2 = x2 - camera.left
+    g_sy2 = (z2 + y1) - camera.bottom  # 전면 (z2)
 
-    sx1 = screen_x - scaled_w/2 - camera.left
-    sy1 = screen_y - scaled_h/2 - camera.bottom
-    sx2 = screen_x + scaled_w/2 - camera.left
-    sy2 = screen_y + scaled_h/2 - camera.bottom
+    # draw_rectangle은 (왼쪽, 아래, 오른쪽, 위) 좌표를 받습니다.
+    # z 값이 클수록 화면상 y가 높아지는 것을 감안하여 min, max를 사용합니다.
+    draw_rectangle(int(g_sx1), int(min(g_sy1, g_sy2)),
+                   int(g_sx2), int(max(g_sy1, g_sy2)))
 
-    draw_rectangle(int(sx1), int(sy1), int(sx2), int(sy2))
+    # --- 2. 높이 사각형 (X, Y) ---
+    # 박스의 Z축 중심을 기준으로 너비(x)와 높이(y)를 그립니다.
+    # '공격 높이'나 '피격 높이'를 확인하기 좋습니다.
+
+    # Z축 중심 계산
+    #cz = (z1 + z2) / 2
+    cz=owner.z
+    # 높이 투영 (중심깊이-하단-좌측, 중심깊이-상단-우측)
+    h_sx1 = x1 - camera.left
+    h_sy1 = (cz + y1) - camera.bottom  # 하단 (y1)
+
+    h_sx2 = x2 - camera.left
+    h_sy2 = (cz + y2) - camera.bottom  # 상단 (y2)
+
+    draw_rectangle(int(h_sx1), int(h_sy1), int(h_sx2), int(h_sy2))
