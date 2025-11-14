@@ -74,3 +74,9 @@ def make_keydown_event(key):
     K.key  = key
     return ('INPUT', K)
 
+def update_afterimages():
+    pass
+
+
+def draw_afterimages(camera):
+    pass

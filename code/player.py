@@ -5,6 +5,8 @@ from code.player_about.player_skill import *
 
 
 
+
+
 class Player:
     Image = None
     def __init__(self):
@@ -35,6 +37,7 @@ class Player:
 
         self.combo_stage = 0
         self.last_attack_time = 0.0
+        self.afterimages = []
 
         # 프레임 크기 계산
         self.frame_width  = self.image.w // self.cols
@@ -71,9 +74,11 @@ class Player:
 
     def update(self):
         self.state_machine.update()
+        update_afterimages()
         pass
 
     def draw(self,camera):
+        draw_afterimages(camera)
         self.state_machine.draw(camera)
         pass
 
