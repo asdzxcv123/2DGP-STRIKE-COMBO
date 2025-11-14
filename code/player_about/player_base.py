@@ -82,7 +82,8 @@ def make_keydown_event(key):
 def add_afterimage(player, image):
     player.afterimages.append({
         'x': player.x,
-        'y': player.y,
+        'z': player.z, # y -> z
+        'y': player.y, # 높이 추가
         'frame': player.frame,
         'row_index': player.row_index,
         'frame_width': player.frame_width,
@@ -111,7 +112,7 @@ def draw_afterimages(player,camera):
         a['image'].opacify(alpha)
 
         screen_x = a['x'] - camera.left
-        screen_y = a['y'] - camera.bottom
+        screen_y = (a['z'] + a['y']) - camera.bottom # (z-y) 적용
 
         sx = int(a['frame']) * a['frame_width']
         sy = (a['rows'] - 1 - a['row_index']) * a['frame_height']

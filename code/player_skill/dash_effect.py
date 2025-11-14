@@ -7,8 +7,8 @@ from code.player_about.player_base import *
 class DashEffect:
     image = None
 
-    def __init__(self, x, y, face_dir):
-        self.x, self.y = x, y
+    def __init__(self, x, z, y, face_dir): # x, y -> x, z, y
+        self.x, self.z, self.y = x, z, y # z, y 적용
         self.face_dir = face_dir
         self.frame = 0.0
         self.cols=5
@@ -31,11 +31,11 @@ class DashEffect:
     def draw(self, camera):
 
         if self.face_dir == 1:
-            self.row_index = 0  # 0번 줄: 오른쪽 대쉬
+            self.row_index = 0
         else:
             self.row_index = 1
         screen_x = self.x - camera.left
-        screen_y = self.y - camera.bottom
+        screen_y = (self.z + self.y) - camera.bottom # (z-y) 적용
 
         sx = int(self.frame) * self.frame_width
         sy = (self.rows - 1 - self.row_index) * self.frame_height

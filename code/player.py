@@ -1,4 +1,3 @@
-
 from code.player_about.player_motion import *
 from code.player_about.player_attack import *
 from code.player_about.player_skill import *
@@ -16,11 +15,12 @@ class Player:
         self.image_bash=load_image('sprite/player/bash_skill.png')
         self.image_dash=load_image('sprite/player/Dash.png')
         self.image = self.image_motion
-        self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
+        self.landing_lock = False
         self.wait_neutral = False
 
         self.x = 400
-        self.y = 300
+        self.z = 300  # y -> z (깊이)
+        self.y = 0    # y (높이)
         self.frame = 0
         self.face_dir=1
         self.dir=0
@@ -31,8 +31,8 @@ class Player:
 
         self.last_speed = 0
         self.move_speed = 0
-        self.yv = 0
-        self.ground_y = self.y
+        self.yv = 0 # y(높이) 속도
+        self.ground_z = self.z # y -> z
         self.key_down_states={}
 
         self.combo_stage = 0
@@ -128,7 +128,6 @@ class Player:
             spawn_x=self.x+(5*self.face_dir)
         else:
             spawn_x = self.x + (100 * self.face_dir)
-        fire_aura=SwordP(spawn_x, self.y, self.face_dir)
+        # y -> z, y (z, y 좌표 전달)
+        fire_aura=SwordP(spawn_x, self.z, self.y, self.face_dir)
         game_world.add_object(fire_aura,1)
-
-

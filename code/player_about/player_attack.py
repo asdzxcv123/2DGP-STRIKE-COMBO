@@ -71,6 +71,9 @@ class Attack:
         pass
 
     def do(self):
+        # 공격 중에는 y(높이)가 0으로 고정 (공중 공격이 아니므로)
+        self.player.y = 0
+        self.player.yv = 0
 
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
         if self.player.frame >= self.player.cols:
@@ -122,10 +125,10 @@ class Attack:
             self.player.row_index = base_row + 1
 
         screen_x = self.player.x - camera.left
-        screen_y = self.player.y - camera.bottom
+        # [수정] (z - y) -> (z + y)
+        screen_y = (self.player.z + self.player.y) - camera.bottom
         self.player.image.clip_draw(sx-30, sy, self.player.frame_width, self.player.frame_height,
                                     screen_x, screen_y, 400, 300)
-
 class Run_Attack:
     def __init__(self, Player):
         self.player = Player
@@ -160,6 +163,10 @@ class Run_Attack:
         pass
 
     def do(self):
+        # 달리는 공격이므로 y(높이)는 0
+        self.player.y = 0
+        self.player.yv = 0
+
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
         if self.player.move_speed > 0:
             self.player.move_speed -= FRICTION_PPS * game_framework.frame_time
@@ -202,7 +209,7 @@ class Run_Attack:
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height
         screen_x = self.player.x - camera.left
-        screen_y = self.player.y - camera.bottom
+        screen_y = (self.player.z + self.player.y) - camera.bottom # z, y 적용
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                     screen_x, screen_y, 400, 300)
         pass
@@ -242,7 +249,7 @@ class Jump_Attack:
     def do(self):
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
 
-
+        # y(높이)에 중력 적용
         self.player.yv -= GRAVITY_PPS * game_framework.frame_time
         self.player.y += self.player.yv * game_framework.frame_time
 
@@ -252,9 +259,9 @@ class Jump_Attack:
                 self.player.move_speed = 0
         self.player.x += self.player.face_dir * self.player.move_speed * game_framework.frame_time
 
-
-        if self.player.y <= self.player.ground_y:
-            self.player.y = self.player.ground_y
+        # 땅 착지(y=0) 판정
+        if self.player.y <= 0:
+            self.player.y = 0
             self.player.yv = 0
 
 
@@ -298,7 +305,7 @@ class Jump_Attack:
             self.player.row_index = 3
 
         screen_x = self.player.x - camera.left
-        screen_y = self.player.y - camera.bottom
+        screen_y = (self.player.z + self.player.y) - camera.bottom # z, y 적용
 
         sx = int(self.player.frame) * self.player.frame_width
         sy = (self.player.rows - 1 - self.player.row_index) * self.player.frame_height

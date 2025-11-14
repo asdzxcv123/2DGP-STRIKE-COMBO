@@ -19,7 +19,8 @@ class Camera:
 
     def update(self, target):
         self.left = target.x - (self.canvas_width // 2)
-        self.bottom = target.y - (self.canvas_height // 2)
+        # target.y -> target.z (깊이 축을 따라감)
+        self.bottom = target.z - (self.canvas_height // 2)
 
         self.left = clamp(0, self.left, self.world_width - self.canvas_width)
         self.bottom = clamp(0, self.bottom, self.world_height - self.canvas_height)
