@@ -1,4 +1,6 @@
 from code.player_about.player_base import *
+from code.player_skill.dash_effect import DashEffect
+
 
 class Skill_Bash:
     def __init__(self, Player):
@@ -84,6 +86,7 @@ class Dash:
 
         self.afterimage_timer = 0.0
         self.AFTERIMAGE_SPAWN_INTERVAL = 0.08
+        self.half_distance=0
         pass
 
 
@@ -101,6 +104,11 @@ class Dash:
         self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
 
         self.afterimage_timer = 0.0
+        self.half_distance = (self.DASH_SPEED_PPS * (self.player.cols / self.animation_speed_pps)) / 2.0
+
+        dash_fx = DashEffect(self.player.x+self.half_distance*self.player.face_dir, self.player.y, self.player.face_dir)
+        game_world.add_object(dash_fx, 0)
+
 
         pass
 
