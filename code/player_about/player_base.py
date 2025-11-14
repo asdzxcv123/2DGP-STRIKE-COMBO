@@ -1,10 +1,8 @@
-from pico2d import *
-
-from code import game_framework, game_world
-from code.bash_projectil import SwordP
-from code.state_machine import StateMachine
 from sdl2 import *
-
+from pico2d import *
+from code import game_framework, game_world
+from code.player_skill.bash_projectil import SwordP
+from code.state_machine import StateMachine
 PIXEL_PER_METER = (10.0 / 0.3)
 RUN_SPEED_KMPH = 21.0
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)

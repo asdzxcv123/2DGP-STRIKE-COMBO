@@ -1,6 +1,9 @@
+
 from code.player_about.player_motion import *
 from code.player_about.player_attack import *
 from code.player_about.player_skill import *
+
+
 
 class Player:
     Image = None
@@ -9,6 +12,7 @@ class Player:
         self.image_attack = load_image('sprite/player/player_attack.png')
         self.image_MtoA=load_image('sprite/player/motion_attack.png')
         self.image_bash=load_image('sprite/player/bash_skill.png')
+        self.image_dash=load_image('sprite/player/Dash.png')
         self.image = self.image_motion
         self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
         self.wait_neutral = False
