@@ -662,12 +662,30 @@ class Jump_Attack:
                                     screen_x, screen_y, 400, 300)
         pass
 
+class Skill_Bash:
+    def __init__(self, Player):
+        self.player=Player
+        pass
+
+    def enter(self, e):
+        pass
+
+    def exit(self):
+        pass
+
+    def do(self):
+        pass
+    def draw(self,camera):
+        pass
+
+
 class Player:
     Image = None
     def __init__(self):
         self.image_motion = load_image('sprite/player/player_motion.png')
         self.image_attack = load_image('sprite/player/player_attack.png')
         self.image_MtoA=load_image('sprite/player/motion_attack.png')
+        self.image_bash=load_image('sprite/player/bash_skill.png')
         self.image = self.image_motion
         self.landing_lock = False  # 착지 직후 이벤트 차단 활성화
         self.wait_neutral = False
