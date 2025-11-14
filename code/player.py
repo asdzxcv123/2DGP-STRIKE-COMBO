@@ -29,6 +29,10 @@ class Player:
         self.rows = 8
         self.row_index = 0
 
+        # 프레임 크기 계산
+        self.frame_width = self.image.w // self.cols
+        self.frame_height = self.image.h // self.rows
+
         self.last_speed = 0
         self.move_speed = 0
         self.yv = 0 # y(높이) 속도
@@ -39,9 +43,21 @@ class Player:
         self.last_attack_time = 0.0
         self.afterimages = []
 
-        # 프레임 크기 계산
-        self.frame_width  = self.image.w // self.cols
-        self.frame_height = self.image.h // self.rows
+        self.active_hitbox = None
+        self.show_hitboxes = False
+        self.hurt_w = self.frame_width * 0.20
+        self.hurt_h = self.frame_height * 0.5
+        if self.face_dir==1:
+            self.hurt_offset_x = -50
+
+        self.hurt_offset_y = -self.frame_height * 0.2  # 몸통이 약간 아래쪽
+        self.hurt_offset_z = 0  # 발 중심 그대로
+
+        self.draw_w = 400
+        self.draw_h = 300
+
+        self.scale_x = self.draw_w / self.frame_width
+        self.scale_y = self.draw_h / self.frame_height
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
@@ -74,14 +90,47 @@ class Player:
         )
         self.landing_lock_until = 0.0
 
+    def get_bb_3d(self):
+        cx = self.x + self.hurt_offset_x
+        cy = self.y + self.hurt_offset_y
+        cz = self.z + self.hurt_offset_z
+
+        half_w = self.hurt_w / 2
+        half_h = self.hurt_h / 2
+        half_d = 15  # 라인 여유 폭 (벨트스크롤 핵심)
+
+        x1 = cx - half_w
+        x2 = cx + half_w
+        y1 = cy
+        y2 = cy + self.hurt_h
+        z1 = cz - half_d
+        z2 = cz + half_d
+
+        return (x1, y1, z1, x2, y2, z2)
+
     def update(self):
         self.state_machine.update()
         update_afterimages(self, game_framework.frame_time)
+        if self.face_dir==1:
+            self.hurt_offset_x = -55
+        else:
+            self.hurt_offset_x= -75
         pass
 
     def draw(self,camera):
         draw_afterimages(self,camera)
         self.state_machine.draw(camera)
+        if self.show_hitboxes:
+            # 플레이어의 허트박스 (녹색)
+            hurtbox = self.get_bb_3d()
+
+            draw_3d_box(self,hurtbox, camera)  # 초록색, 반투명
+
+            # 활성화된 공격 히트박스 (빨간색)
+            if self.active_hitbox:
+
+                draw_3d_box(self,self.active_hitbox, camera)  # 빨간색, 반투명
+
         pass
 
 
@@ -120,6 +169,10 @@ class Player:
 
                 return
 
+        if H_down(('INPUT', event)):
+            self.show_hitboxes = not self.show_hitboxes  # 토글
+            return
+
 
         self.state_machine.handle_state_event(('INPUT', event))
         pass
@@ -131,3 +184,4 @@ class Player:
         # y -> z, y (z, y 좌표 전달)
         fire_aura=SwordP(spawn_x, self.z, self.y, self.face_dir)
         game_world.add_object(fire_aura,1)
+

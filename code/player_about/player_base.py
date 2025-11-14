@@ -73,6 +73,9 @@ def Q_down(e):
 def Shift_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LSHIFT
 
+def H_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_h
+
 def make_keydown_event(key):
     K = type('K', (), {})()
     K.type = SDL_KEYDOWN
@@ -128,3 +131,35 @@ def draw_afterimages(player,camera):
         player.image_bash.opacify(1.0)
         player.image_dash.opacify(1.0)
     pass
+
+def check_collision_3d(hitbox, hurtbox):
+    x1_hit, y1_hit, z1_hit, x2_hit, y2_hit, z2_hit = hitbox #히트박스 튜플
+    x1_hurt, y1_hurt, z1_hurt, x2_hurt, y2_hurt, z2_hurt = hurtbox# 허트박스 튜플
+
+    # X축, Y축, Z축 모두에서 겹치는지 확인
+    x_overlap = (x1_hit < x2_hurt) and (x2_hit > x1_hurt)
+    y_overlap = (y1_hit < y2_hurt) and (y2_hit > y1_hurt)
+    z_overlap = (z1_hit < z2_hurt) and (z2_hit > z1_hurt)
+
+    return x_overlap and y_overlap and z_overlap
+def draw_3d_box(owner, box, camera):
+    x1, y1, z1, x2, y2, z2 = box
+
+    # owner를 통해 scale_x, scale_y 접근
+    scaled_w = (x2 - x1) * owner.scale_x
+    scaled_h = (y2 - y1) * owner.scale_y
+
+    # 화면 중심 계산
+    cx = (x1 + x2) / 2
+    cy = y1
+    cz = (z1 + z2) / 2
+
+    screen_x = cx
+    screen_y = cz + cy
+
+    sx1 = screen_x - scaled_w/2 - camera.left
+    sy1 = screen_y - scaled_h/2 - camera.bottom
+    sx2 = screen_x + scaled_w/2 - camera.left
+    sy2 = screen_y + scaled_h/2 - camera.bottom
+
+    draw_rectangle(int(sx1), int(sy1), int(sx2), int(sy2))
