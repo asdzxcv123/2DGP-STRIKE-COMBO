@@ -51,13 +51,14 @@ class Player:
         self.RUN_ATTACK=Run_Attack(self)
         self.JUMP_ATTACK=Jump_Attack(self)
         self.BASH_SKILL=Skill_Bash(self)
+        self.DASH=Dash(self)
         self.state_machine = StateMachine(
             self.IDLE,
             {
                 self.IDLE: {right_down: self.WALK, left_down: self.WALK,
                             up_down: self.WALK, down_down:self.WALK,
                             C_down: self.JUMP, X_down: self.ATTACK,
-                            Q_down: self.BASH_SKILL},
+                            Q_down: self.BASH_SKILL, Shift_down:self.DASH},
                 self.WALK: {L_ctrl_down: self.RUN,C_down: self.JUMP,
                             X_down: self.ATTACK, Q_down: self.BASH_SKILL},
                 self.RUN: {right_down: self.IDLE, left_down: self.IDLE, right_up: self.IDLE, left_up: self.IDLE,
@@ -68,17 +69,18 @@ class Player:
                 self.RUN_ATTACK:{},
                 self.JUMP_ATTACK:{},
                 self.BASH_SKILL:{},
+                self.DASH:{}
             }
         )
         self.landing_lock_until = 0.0
 
     def update(self):
         self.state_machine.update()
-        update_afterimages()
+        update_afterimages(self, game_framework.frame_time)
         pass
 
     def draw(self,camera):
-        draw_afterimages(camera)
+        draw_afterimages(self,camera)
         self.state_machine.draw(camera)
         pass
 
