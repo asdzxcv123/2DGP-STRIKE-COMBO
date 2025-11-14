@@ -5,6 +5,15 @@ class Attack:
     def __init__(self,Player):
         self.player=Player
         self.next_combo_input_buffered = False
+        # (offset_x, offset_z, width, height, depth)
+        self.hitbox_data = {
+            1: (50, 0, 80, 80, 30),  # 1타 (앞으로 50, 폭 80, 높이 80, 깊이 30)
+            2: (50, 0, 80, 80, 30),  # 2타
+            3: (60, 0, 100, 100, 30),  # 3타 (더 길고 넓게)
+            4: (60, 0, 100, 100, 30),  # 4타
+            5: (70, 0, 120, 120, 40)  # 5타 (막타)
+        }
+
         pass
 
     def buffer_combo_input(self):
