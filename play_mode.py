@@ -34,7 +34,7 @@ def init():
     game_world.add_object(player, 1)
     game_world.add_object(road, 0)
 
-    dummy=DummyObject(player.x,player.y)
+    dummy=DummyObject(player.x,player.z)
     game_world.add_object(dummy, 1)
 def update():
     game_world.update()

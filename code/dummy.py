@@ -26,12 +26,14 @@ class DummyObject:
         self.scale_y = self.draw_h / self.frame_height
 
         # --- 허트박스 (피격 판정) ---
-        self.hurt_w = 100  # 너비
-        self.hurt_h = 250  # 키
+        self.hurt_w = self.frame_width * 0.20
+        self.hurt_h = self.frame_height * 0.5
         self.hurt_d = 30  # 깊이 (z1 ~ z2)
 
-        self.hurt_offset_x = 0
-        self.hurt_offset_y = 0
+
+        self.hurt_offset_x = -50
+
+        self.hurt_offset_y = -self.frame_height * 0.4
         self.hurt_offset_z = 0
 
     # 플레이어와 동일한 인터페이스
