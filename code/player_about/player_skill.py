@@ -79,8 +79,11 @@ class Skill_Bash:
 class Dash:
     def __init__(self, Player):
         self.player = Player
-        self.DASH_SPEED_PPS = RUN_SPEED_PPS * 4.5
+        self.DASH_SPEED_PPS = RUN_SPEED_PPS * 2.5
         self.animation_speed_pps = 0.0
+
+        self.afterimage_timer = 0.0
+        self.AFTERIMAGE_SPAWN_INTERVAL = 0.08
         pass
 
 
@@ -94,7 +97,10 @@ class Dash:
         self.player.frame_height = self.player.image.h // self.player.rows
 
         self.animation_duration = 0.3
-        self.animation_speed_pps = self.player.cols / self.animation_duration
+        #self.animation_speed_pps = self.player.cols / self.animation_duration
+        self.animation_speed_pps = (ACTION_PER_TIME * 2.0) * FRAMES_PER_ACTION
+
+        self.afterimage_timer = 0.0
 
         pass
 
@@ -110,8 +116,11 @@ class Dash:
     def do(self):
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
         self.player.x += self.DASH_SPEED_PPS * self.player.face_dir * game_framework.frame_time
-        add_afterimage(self.player, self.player.image_dash)
 
+        self.afterimage_timer += game_framework.frame_time
+        if self.afterimage_timer >= self.AFTERIMAGE_SPAWN_INTERVAL:
+            add_afterimage(self.player, self.player.image_dash)
+            self.afterimage_timer -= self.AFTERIMAGE_SPAWN_INTERVAL
         if self.player.frame >= self.player.cols:
             self.player.state_machine.cur_state.exit(None)
 
@@ -150,4 +159,5 @@ class Dash:
 
         self.player.image.clip_draw(sx, sy, self.player.frame_width, self.player.frame_height,
                                     screen_x, screen_y, 400, 300)
+
         pass
