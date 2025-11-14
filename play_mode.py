@@ -4,6 +4,7 @@ from code.player import Player
 from pico2d import *
 from code.camera import Camera
 from code.test_map import *
+from code.dummy import *
 CANVAS_WIDTH = 1200
 CANVAS_HEIGHT = 600
 WORLD_WIDTH = 4000  # 맵의 실제 총 너비
@@ -32,6 +33,9 @@ def init():
     player = Player()
     game_world.add_object(player, 1)
     game_world.add_object(road, 0)
+
+    dummy=DummyObject(player.x,player.y)
+    game_world.add_object(dummy, 1)
 def update():
     game_world.update()
 
