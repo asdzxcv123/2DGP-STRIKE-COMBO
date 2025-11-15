@@ -1,4 +1,6 @@
 from pico2d import *
+
+from code import game_world
 from code.player_about.player_base import draw_3d_box
 
 
@@ -7,7 +9,7 @@ class DummyObject:
         self.x = x
         self.z = z
         self.y = 0  # 높이
-
+        self.hp = 100
         # 플레이어 이미지를 재활용 (테스트용)
         # 나중에 허수아비 이미지로 바꾸셔도 됩니다.
         self.image = load_image('sprite/player/player_motion.png')
@@ -36,6 +38,13 @@ class DummyObject:
         self.hurt_offset_y = -self.frame_height * 0.4
         self.hurt_offset_z = 0
 
+    def on_hit(self, damage):
+        self.hp -= damage
+        print(f"Dummy HIT! HP: {self.hp}")
+
+        if self.hp <= 0:
+            print("Dummy Destroyed")
+            game_world.remove_object(self)
     # 플레이어와 동일한 인터페이스
     def get_bb_3d(self):
         cx = self.x + self.hurt_offset_x

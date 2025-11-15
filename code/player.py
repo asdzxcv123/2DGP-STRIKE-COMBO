@@ -53,6 +53,8 @@ class Player:
 
         self.hurt_offset_y = -self.frame_height * 0.4  # 몸통이 약간 아래쪽
         self.hurt_offset_z = 0  # 발 중심 그대로
+        self.hit_list = []
+
 
         self.draw_w = 400
         self.draw_h = 300
@@ -127,7 +129,9 @@ class Player:
 
 
                     if check_collision_3d(self.active_hitbox, dummy_hurtbox):
-                        print("!!! HIT!!! (히트박스 충돌 성공)")
+                        if o not in self.hit_list:
+                            o.on_hit(1000)  # 10의 데미지를 주고
+                            self.hit_list.append(o)
                         pass
         pass
 
