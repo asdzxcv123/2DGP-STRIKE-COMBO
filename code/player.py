@@ -112,22 +112,23 @@ class Player:
     def update(self):
         self.state_machine.update()
         update_afterimages(self, game_framework.frame_time)
-        if self.face_dir==1:
-            self.hurt_offset_x = -55
-        else:
-            self.hurt_offset_x= -75
+
         my_hurtbox = self.get_bb_3d()
 
-        # !!! 이 줄을 추가해서 my_hurtbox의 실제 좌표를 강제로 출력 !!!
         #print(f"MY_HURTBOX_DATA: {my_hurtbox}")
-        for o in game_world.world[1]:  # <-- 여기가 수정됨
+        if self.active_hitbox:
 
-            if isinstance(o, DummyObject):
-                dummy_hurtbox = o.get_bb_3d()
 
-                if check_collision_3d(my_hurtbox, dummy_hurtbox):
-                    print("!!! 충돌 감지 (데이터 일치) !!!")
-                    pass
+            for o in game_world.world[1]:
+
+                if isinstance(o, DummyObject):
+
+                    dummy_hurtbox = o.get_bb_3d()
+
+
+                    if check_collision_3d(self.active_hitbox, dummy_hurtbox):
+                        print("!!! HIT!!! (히트박스 충돌 성공)")
+                        pass
         pass
 
     def draw(self,camera):

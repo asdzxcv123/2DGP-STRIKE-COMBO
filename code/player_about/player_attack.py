@@ -6,13 +6,7 @@ class Attack:
         self.player=Player
         self.next_combo_input_buffered = False
         # (offset_x, offset_z, width, height, depth)
-        self.hitbox_data = {
-            1: (50, 0, 80, 80, 30),  # 1타 (앞으로 50, 폭 80, 높이 80, 깊이 30)
-            2: (50, 0, 80, 80, 30),  # 2타
-            3: (60, 0, 100, 100, 30),  # 3타 (더 길고 넓게)
-            4: (60, 0, 100, 100, 30),  # 4타
-            5: (70, 0, 120, 120, 40)  # 5타 (막타)
-        }
+        self.hitbox_data = { }
 
         pass
 
@@ -77,16 +71,72 @@ class Attack:
 
         if not self.next_combo_input_buffered:
             self.player.combo_stage = 0
+        self.player.active_hitbox = None
         pass
 
     def do(self):
         # 공격 중에는 y(높이)가 0으로 고정 (공중 공격이 아니므로)
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = 5
+        else:
+            self.player.hurt_offset_x = -30
+        attack_offset_x=40
+        #offset조정은 150기준 40, 증가할떄 증가 혹은 감소값의 1/2을더하면됨
+        if self.player.face_dir == 1:
+            self.hitbox_data = {
+                1: (self.player.hurt_offset_x+attack_offset_x, 0, 150, 150, 30),  # 1타 (앞으로 50, 폭 80, 높이 80, 깊이 30)
+                2: (self.player.hurt_offset_x+attack_offset_x, 0, 150, 150, 30),  # 2타
+                3: (self.player.hurt_offset_x+attack_offset_x+10, 0, 170, 130, 50),  # 3타 (더 길고 넓게)
+                4: (self.player.hurt_offset_x+attack_offset_x+15, 0, 180, 100, 70),  # 4타
+                5: (self.player.hurt_offset_x+attack_offset_x-15, 0, 120, 170, 40)  # 5타 (막타)
+            }
+        else:
+            self.hitbox_data = {
+                1: (-self.player.hurt_offset_x + attack_offset_x, 0, 150, 150, 30),  # 1타 (앞으로 50, 폭 80, 높이 80, 깊이 30)
+                2: (-self.player.hurt_offset_x + attack_offset_x, 0, 150, 150, 30),  # 2타
+                3: (-self.player.hurt_offset_x + attack_offset_x + 10, 0, 170, 130, 50),  # 3타 (더 길고 넓게)
+                4: (-self.player.hurt_offset_x + attack_offset_x + 15, 0, 180, 100, 70),  # 4타
+                5: (-self.player.hurt_offset_x + attack_offset_x - 15, 0, 120, 170, 40)  # 5타 (막타)
+            }
         self.player.y = 0
         self.player.yv = 0
 
         self.player.frame += self.animation_speed_pps * game_framework.frame_time
-        if self.player.frame >= self.player.cols:
 
+        data = self.hitbox_data.get(self.player.combo_stage)
+
+        # (임시) 공격 애니메이션의 특정 프레임에서만 활성화 (2프레임 ~ 끝-2프레임)
+        # 이 프레임 범위는 나중에 직접 조정하셔야 합니다.
+        if data and (self.player.frame >= 0.0 and self.player.frame < self.player.cols):
+            offset_x_rel, offset_z, width, height, depth = data
+
+            # 1. 방향에 맞게 x 오프셋 적용
+            offset_x = offset_x_rel * self.player.face_dir
+
+            # 2. 히트박스 중심 좌표 계산
+            cx = self.player.x + offset_x
+            cy = self.player.y-100  # y 오프셋은 0 (바닥부터)
+            cz = self.player.z + offset_z
+
+            # 3. 최종 좌표 (x1, y1, z1, x2, y2, z2) 계산
+            half_w = width / 2
+            half_d = depth / 2
+
+            x1 = cx - half_w
+            x2 = cx + half_w
+            y1 = cy  # (player.y)부터
+            y2 = cy + height  # (player.y + height)까지
+            z1 = cz - half_d
+            z2 = cz + half_d
+
+            self.player.active_hitbox = (x1, y1, z1, x2, y2, z2)
+        else:
+
+            self.player.active_hitbox = None
+
+
+        if self.player.frame >= self.player.cols:
+            self.player.active_hitbox = None
             if self.next_combo_input_buffered:
                 self.player.state_machine.cur_state.exit(None)
                 self.player.state_machine.cur_state = self.player.ATTACK
@@ -140,6 +190,7 @@ class Attack:
                                     screen_x, screen_y, 400, 300)
 class Run_Attack:
     def __init__(self, Player):
+        self.hitbox_data =()
         self.player = Player
 
     def enter(self,e):
@@ -160,6 +211,11 @@ class Run_Attack:
             self.player.row_index = 1
         pass
 
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -75
+
 
     def exit(self,e):
         self.player.image = self.player.image_motion
@@ -168,7 +224,7 @@ class Run_Attack:
         self.player.rows = 8
         self.player.frame_width = self.player.image.w // self.player.cols
         self.player.frame_height = self.player.image.h // self.player.rows
-
+        self.player.active_hitbox = None
         pass
 
     def do(self):
@@ -185,8 +241,31 @@ class Run_Attack:
 
         self.player.x += 1.5*self.player.face_dir * self.player.move_speed * game_framework.frame_time
 
+        if self.player.face_dir==1:
+            self.hitbox_data = (self.player.hurt_offset_x, 0, 300, 100, 40)
+        else:
+            self.hitbox_data = (-self.player.hurt_offset_x, 0, 300, 100, 40)
+
+        data = self.hitbox_data
+        if data and (self.player.frame > 2.0 and self.player.frame < self.player.cols - 2.0):
+            offset_x_rel, offset_z, width, height, depth = data
+            offset_x = offset_x_rel * self.player.face_dir
+
+            cx = self.player.x + offset_x
+            cy = self.player.y - 100
+            cz = self.player.z + offset_z
+            half_w, half_d = width / 2, depth / 2
+
+            x1, x2 = cx - half_w, cx + half_w
+            y1, y2 = cy, cy + height
+            z1, z2 = cz - half_d, cz + half_d
+
+            self.player.active_hitbox = (x1, y1, z1, x2, y2, z2)
+        else:
+            self.player.active_hitbox = None
 
         if self.player.frame >= self.player.cols:
+            self.player.active_hitbox = None
             self.player.state_machine.cur_state.exit(None)
 
 
@@ -243,6 +322,11 @@ class Jump_Attack:
         else:
             self.player.row_index = 3
 
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -35
+
         pass
 
     def exit(self,e):
@@ -252,7 +336,7 @@ class Jump_Attack:
         self.player.rows = 8
         self.player.frame_width = self.player.image.w // self.player.cols
         self.player.frame_height = self.player.image.h // self.player.rows
-
+        self.player.active_hitbox = None
         pass
 
     def do(self):
@@ -267,12 +351,32 @@ class Jump_Attack:
             if self.player.move_speed < 0:
                 self.player.move_speed = 0
         self.player.x += self.player.face_dir * self.player.move_speed * game_framework.frame_time
+        if self.player.face_dir == 1:
+            self.hitbox_data = (self.player.hurt_offset_x+30, 0, 250, 300, 40)
+        else:
+            self.hitbox_data = (-self.player.hurt_offset_x+30, 0, 250, 300, 40)
 
+        data = self.hitbox_data
+        if data and (self.player.frame > 2.0 and self.player.frame < self.player.cols - 2.0):
+            offset_x_rel, offset_z, width, height, depth = data
+            offset_x = offset_x_rel * self.player.face_dir
+
+            cx = self.player.x + offset_x
+            cy = self.player.y -150
+            cz = self.player.z + offset_z
+            half_w, half_d = width / 2, depth / 2
+
+            x1, x2 = cx - half_w, cx + half_w
+            y1, y2 = cy, cy + height
+            z1, z2 = cz - half_d, cz + half_d
+            self.player.active_hitbox = (x1, y1, z1, x2, y2, z2)
+        else:
+            self.player.active_hitbox = None
         # 땅 착지(y=0) 판정
         if self.player.y <= 0:
             self.player.y = 0
             self.player.yv = 0
-
+            self.player.active_hitbox = None
 
             self.player.state_machine.cur_state.exit(None)
 

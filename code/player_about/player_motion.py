@@ -26,6 +26,10 @@ class Idle:
     def do(self):
         self.player.frame = (self.player.frame + (
                     ACTION_PER_TIME / 2) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -80
         pass
 
     def draw(self, camera):
@@ -81,7 +85,10 @@ class Walk:
     def do(self):
         self.player.frame = (self.player.frame + (
                 ACTION_PER_TIME * 1.5) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
-
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -80
         self.player.last_move_speed = self.player.move_speed
 
         held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
@@ -151,7 +158,10 @@ class Run:
     def do(self):
         self.player.frame = (self.player.frame + (
                 ACTION_PER_TIME * 1.3) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
-
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -80
         held_right = self.player.key_down_states.get(SDLK_RIGHT, False)
         held_left = self.player.key_down_states.get(SDLK_LEFT, False)
         held_up = self.player.key_down_states.get(SDLK_UP, False)
@@ -227,6 +237,10 @@ class Jump:
 
     def do(self):
         # [수정] (cols-1) -> cols, 애니메이션이 마지막 프레임까지 돌도록
+        if self.player.face_dir == 1:
+            self.player.hurt_offset_x = -55
+        else:
+            self.player.hurt_offset_x = -80
         self.player.frame = (self.player.frame + (
             ACTION_PER_TIME) * FRAMES_PER_ACTION * game_framework.frame_time) % self.player.cols
 

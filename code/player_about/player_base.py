@@ -177,4 +177,4 @@ def draw_3d_box(owner, box, camera):
     h_sx2 = x2 - camera.left
     h_sy2 = (cz + y2) - camera.bottom  # 상단 (y2)
 
-    draw_rectangle(int(h_sx1), int(h_sy1), int(h_sx2), int(h_sy2))
+    draw_rectangle(int(h_sx1), int(h_sy1), int(h_sx2), int(h_sy2),0,0,255)
