@@ -130,7 +130,7 @@ class Player:
 
                     if check_collision_3d(self.active_hitbox, dummy_hurtbox):
                         if o not in self.hit_list:
-                            o.on_hit(1000)  # 10의 데미지를 주고
+                            o.on_hit(10)  # 10의 데미지를 주고
                             self.hit_list.append(o)
                         pass
         pass

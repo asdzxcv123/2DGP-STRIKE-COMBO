@@ -27,7 +27,7 @@ class SwordP:
         pass
 
     def update(self):
-        self.x+=PROJ_SPEED_PPS * self.dir * game_framework.frame_time
+        self.x+=PROJ_SPEED_PPS * self.dir * game_framework.frame_time*5
         # 투사체는 z, y축(깊이, 높이)으로는 움직이지 않음
         if self.dir==1:
             if self.x>self.st_x+800:

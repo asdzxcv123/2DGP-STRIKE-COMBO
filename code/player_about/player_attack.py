@@ -14,6 +14,7 @@ class Attack:
         self.next_combo_input_buffered = True
 
     def enter(self,e):
+        self.player.hit_list=[]
         now = get_time()
         self.player.image = self.player.image_attack
         self.player.frame = 0
@@ -199,7 +200,7 @@ class Run_Attack:
         self.player.move_speed = RUN_SPEED_PPS
         self.player.rows = 4
         self.player.cols = 7
-
+        self.player.hit_list = []
         self.animation_speed_pps = (ACTION_PER_TIME * 1.5) * FRAMES_PER_ACTION
 
         self.player.frame_width = self.player.image.w // self.player.cols
@@ -312,7 +313,7 @@ class Jump_Attack:
 
         self.player.rows = 4
         self.player.cols=7
-
+        self.player.hit_list = []
         self.animation_speed_pps = (ACTION_PER_TIME * 1.5) * FRAMES_PER_ACTION
         self.player.frame_width = self.player.image.w // self.player.cols
         self.player.frame_height = self.player.image.h // self.player.rows
