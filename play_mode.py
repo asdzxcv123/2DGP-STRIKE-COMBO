@@ -5,9 +5,9 @@ from pico2d import *
 from code.camera import Camera
 from code.test_map import *
 from code.dummy import *
-CANVAS_WIDTH = 1200
+CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
-WORLD_WIDTH = 4000  # 맵의 실제 총 너비
+WORLD_WIDTH = 1800  # 맵의 실제 총 너비
 WORLD_HEIGHT = 600 # 맵의 실제 총 높이
 
 player=None
