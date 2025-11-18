@@ -26,7 +26,7 @@ class Portal:
             # 충돌 박스 (히트박스) 설정
         self.hurt_w = 100
         self.hurt_h = 250
-        self.hurt_d = 50
+        self.hurt_d = 80
 
         # 애니메이션 설정
         self.cols = 1
@@ -69,9 +69,9 @@ class Portal:
             self.frame_width,  # 잘라낼 폭
             self.frame_height,  # 잘라낼 높이
             screen_x,  # 화면에 그릴 위치 X
-            screen_y  # 화면에 그릴 위치 Y
+            screen_y,200,200  # 화면에 그릴 위치 Y
         )
 
         # 디버그용 박스 그리기 (draw_3d_box 함수가 정의되어 있다고 가정)
-        # hurtbox = self.get_bb_3d()
-        # draw_3d_box(self, hurtbox, camera)
+        hurtbox = self.get_bb_3d()
+        draw_3d_box(self, hurtbox, camera)
