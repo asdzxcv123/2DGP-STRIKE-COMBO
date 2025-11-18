@@ -1,4 +1,6 @@
 from pico2d import *
+from code import game_world
+from code.portal import Portal
 
 
 class StageMap:
@@ -8,29 +10,41 @@ class StageMap:
         self.src_w, self.src_h = w, h
         self.scale = scale
 
-        # 확대된 맵의 실제 월드 크기
+        # 실제 게임 내 크기
         self.world_w = int(w * scale)
         self.world_h = int(h * scale)
+
+        # 포탈 관리 리스트
+        self.portals = []
+
+        # 이동 제한 구역 (기본값)
+        self.boundary = {'z_min': 0, 'z_max': 1000}
+
+    def set_boundary(self, z_min, z_max):
+        self.boundary['z_min'] = z_min
+        self.boundary['z_max'] = z_max
+
+    def add_portal(self, x, z, next_stage_name):
+        # 포탈 생성 및 게임 월드 추가
+        new_portal = Portal(x, z, next_stage_name)
+        game_world.add_object(new_portal, 1)  # 1번 레이어(객체)
+        self.portals.append(new_portal)  # 맵 관리 리스트에 추가
 
     def update(self):
         pass
 
     def draw(self, camera):
         sx = int(camera.left)
-
-        # 스크롤 범위 제한 (0 ~ 맵 끝)
         max_scroll = self.world_w - camera.canvas_width
         sx = max(0, min(sx, max_scroll))
 
-        # 화면 너비만큼 원본에서 가져올 폭 계산
-        view_w = camera.canvas_width / self.scale
+        screen_w = camera.canvas_width
+        view_w_in_image = screen_w / self.scale
         clip_x = self.src_x + (sx / self.scale)
-
-        # 화면 바닥에 맵을 붙여서 그리기 위한 Y 중심좌표
         draw_y = self.world_h // 2
 
         self.image.clip_draw(
-            int(clip_x), int(self.src_y), int(view_w), int(self.src_h),
-            camera.canvas_width // 2, draw_y,
-            camera.canvas_width, self.world_h
+            int(clip_x), int(self.src_y), int(view_w_in_image), int(self.src_h),
+            screen_w // 2, draw_y,
+            screen_w, self.world_h
         )
