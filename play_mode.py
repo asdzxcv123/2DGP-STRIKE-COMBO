@@ -1,9 +1,10 @@
 
 from code import game_world, game_framework
+from code.map import StageMap
 from code.player import Player
 from pico2d import *
 from code.camera import Camera
-from code.test_map import *
+from code.map import *
 from code.dummy import *
 CANVAS_WIDTH = 800
 CANVAS_HEIGHT = 600
@@ -26,7 +27,7 @@ def handle_events():
 
 def init():
     global player, camera
-    road=Test_Road()
+    road=StageMap('sprite/map/stage1.png', 23, 27, 1997, 257, scale=3.0)
     camera=Camera(CANVAS_WIDTH,CANVAS_HEIGHT)
     camera.world_size(WORLD_WIDTH, WORLD_HEIGHT)
 
