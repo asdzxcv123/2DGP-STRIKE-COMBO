@@ -102,6 +102,7 @@ class M_Die(MonsterState):
 # --- 몬스터 메인 클래스 ---
 class Monster:
     def __init__(self, x, z):
+
         self.x, self.z, self.y = x, z, 0
         self.hp = 50
         self.face_dir = -1
@@ -115,7 +116,7 @@ class Monster:
         # 히트박스 설정
         self.hurt_w, self.hurt_h, self.hurt_d = 60, 120, 30
         self.hurt_offset_x, self.hurt_offset_y = 0, 0
-
+        self.hurt_offset_z = -40
         # 상태 머신
         self.IDLE = M_Idle(self)
         self.ATTACK = M_Attack(self)
@@ -134,9 +135,21 @@ class Monster:
         self.frame_height = self.image_walk.h
 
     def get_bb_3d(self):
-        # Player와 호환되는 3D AABB
-        return (self.x - self.hurt_w / 2, self.y, self.z - self.hurt_d / 2,
-                self.x + self.hurt_w / 2, self.y + self.hurt_h, self.z + self.hurt_d / 2)
+        cx = self.x + self.hurt_offset_x
+        cy = self.y + self.hurt_offset_y
+        cz = self.z + self.hurt_offset_z
+
+        half_w = self.hurt_w / 2
+        half_d = self.hurt_d / 2
+
+        x1 = cx - half_w
+        x2 = cx + half_w
+        y1 = cy
+        y2 = cy + self.hurt_h  # y1(바닥) 부터 y2(머리) 까지
+        z1 = cz - half_d
+        z2 = cz + half_d
+
+        return (x1, y1, z1, x2, y2, z2)
 
     def on_hit(self, damage):
         print(f"Monster Hit! HP: {self.hp} -> {self.hp - damage}")

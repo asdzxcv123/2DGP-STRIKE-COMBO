@@ -1,46 +1,45 @@
 from pico2d import *
-# game_framework가 update에서 사용되므로 임포트가 필요합니다.
 from code import game_framework
-
-from code.player_about.player_base import * # (사용자 환경에 맞게 유지)
-
-# (가정) 상수가 정의되어 있지 않다면 아래와 같이 정의가 필요합니다.
-# 이미 import한 파일에 있다면 주석 처리하세요.
-ACTION_PER_TIME = 1.0
-FRAMES_PER_ACTION = 8
+from code.player_about.player_base import draw_3d_box
 
 
 class Portal:
     image = None
 
     def __init__(self, x, z, next_stage_name):
+
         self.x = x
         self.z = z
-        self.y = 0  # 포털은 보통 바닥에 위치
+        self.y = 0
         self.next_stage_name = next_stage_name
-        self.row_index = 0  # 애니메이션 행 인덱스
+
         if Portal.image is None:
-            # 경로가 맞는지 확인해주세요.
             Portal.image = load_image('sprite/map/portal.png')
 
-            # 충돌 박스 (히트박스) 설정
-        self.hurt_w = 100
-        self.hurt_h = 250
-        self.hurt_d = 80
+        # [핵심 수정 1] 허트박스 크기를 이미지 그리기 크기(200x200)에 맞춰 확장
+        # 이렇게 해야 눈에 보이는 포탈 그림 전체가 감지 영역이 됩니다.
+        self.hurt_w = 180  # 너비 (이미지 200보다 약간 작게)
+        self.hurt_h = 250  # 높이 (플레이어 키 고려)
 
+        # [핵심 수정 2] 깊이(Z축)를 대폭 늘림 (기존 80 -> 150)
+        # 화면상에서 포탈의 위/아래 부분(Z축 깊이)을 밟아도 인식되도록 합니다.
+        self.hurt_d = 30
+        self.hurt_offset_x = 0
+        self.hurt_offset_y =0
+        self.hurt_offset_z = -30
         # 애니메이션 설정
         self.cols = 1
         self.rows = 5
         self.frame = 0
         self.frame_width = self.image.w // self.cols
         self.frame_height = self.image.h // self.rows
-
-        # 애니메이션 속도
-        self.animation_speed_pps = 10.0  # 초당 프레임 재생 속도 (적절히 조절)
+        self.animation_speed_pps = 10.0
 
     def get_bb_3d(self):
-        # 3D AABB 충돌 박스 리턴 (Left, Bottom, Back, Right, Top, Front)
-        cx, cy, cz = self.x, self.y, self.z
+
+        cx= self.x+self.hurt_offset_x
+        cy=self.y+self.hurt_offset_y
+        cz=self.z+self.hurt_offset_z
         half_w, half_d = self.hurt_w / 2, self.hurt_d / 2
 
         x1 = cx - half_w
@@ -52,26 +51,18 @@ class Portal:
         return (x1, y1, z1, x2, y2, z2)
 
     def update(self):
-
         self.frame = (self.frame + self.animation_speed_pps * game_framework.frame_time) % self.rows
 
     def draw(self, camera):
-        sx = 0
         self.row_index = int(self.frame)
-        sy = (self.rows - 1 - self.row_index) * self.frame_height
 
+        # 이미지 그리기 (중심 기준)
         screen_x = self.x - camera.left
         screen_y = (self.z + self.y) - camera.bottom
 
+        # [참고] 여기서 200, 200 크기로 그리므로, 위에서 hurt_w, hurt_d를 이에 맞춰 키웠습니다.
+        self.image.clip_draw(0, 0,self.frame_width, self.frame_height,screen_x, screen_y,200, 200)
 
-        self.image.clip_draw(
-            sx, 0,  # 잘라낼 이미지의 시작 좌표 (left, bottom)
-            self.frame_width,  # 잘라낼 폭
-            self.frame_height,  # 잘라낼 높이
-            screen_x,  # 화면에 그릴 위치 X
-            screen_y,200,200  # 화면에 그릴 위치 Y
-        )
-
-        # 디버그용 박스 그리기 (draw_3d_box 함수가 정의되어 있다고 가정)
+        # 디버그용 박스 (H키 눌러서 확인 시 이제 이미지 크기와 비슷하게 보일 것입니다)
         hurtbox = self.get_bb_3d()
         draw_3d_box(self, hurtbox, camera)
